@@ -328,21 +328,22 @@ export default class Unit extends Phaser.Sprite {
             return;
         }
 
-        // If we selected an attack, run the battle, then place us in the correct attack position
         var attackPos = this.getAttackPos();
+        var assistPos = this.getAssistPos();
+        var target;
+        // If we selected an attack or assist, run the battle/assist, then place us in the correct position
         if (attackPos !== null) {
             console.log('attacking!');
-            var target = this.game.grid[toGrid(this.y)][toGrid(this.x)].unit;
+            target = this.game.grid[toGrid(this.y)][toGrid(this.x)].unit;
             console.log(this.name + ' is attacking ' + this.game.units[target].name);
             this.attack(this.game.units[target]);
 
             this.x = fromGrid(attackPos.x);
             this.y = fromGrid(attackPos.y);
         }
-        var assistPos = this.getAssistPos();
-        if (assistPos !== null) {
+        else if (assistPos !== null) {
             console.log('assisting!');
-            var target = this.game.grid[toGrid(this.y)][toGrid(this.x)].unit;
+            target = this.game.grid[toGrid(this.y)][toGrid(this.x)].unit;
             console.log(this.name + ' is assisting ' + this.game.units[target].name);
             var handledMove = this.assist(this.game.units[target], assistPos);
 
@@ -352,7 +353,7 @@ export default class Unit extends Phaser.Sprite {
                 this.y = fromGrid(assistPos.y);
             }
         }
-        // If not an attack and not a valid move, reset to last position, don't end turn
+        // If not an attack/assist and not a valid move, reset to last position, don't end turn
         else if (!this.checkAllowedPos(this.validEndPositons)) {
             console.log('Destination not allowed!');
             this.x = this.lastX;
@@ -362,9 +363,13 @@ export default class Unit extends Phaser.Sprite {
 
         // If we attacked, assisted, or moved, we need to update the unit's position in the grid, then end the turn
         this.updateUnitPosition();
-        this.validMoves = null;
+
+        // Possible GC help?
         this.validEndPositons = null;
+        this.validMoves = null;
         this.validAttacks = null;
+        this.validAssists = null;
+
         this.endTurn();
 
         // DEBUG
@@ -485,7 +490,7 @@ export default class Unit extends Phaser.Sprite {
     }
 
     getValidMoves() {
-        // Searches all possible tiles on the grid to determine whether ther eis a path to that tile
+        // Searches all possible tiles on the grid to determine whether there is a path to that tile
         // within the unit's movement range
         var posX = toGrid(this.x),
             posY = toGrid(this.y),
