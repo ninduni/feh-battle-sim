@@ -1,0 +1,14 @@
+<TextureAtlas imagePath="sprites.png">
+	<SubTexture name="sword" x="0" y="57" width="52" height="55"/>
+	<SubTexture name="lance" x="101" y="49" width="42" height="42"/>
+	<SubTexture name="axe" x="50" y="171" width="48" height="47"/>
+	<SubTexture name="bow" x="100" y="145" width="45" height="46"/>
+	<SubTexture name="dagger" x="54" y="49" width="45" height="46"/>
+	<SubTexture name="redTome" x="0" y="0" width="52" height="55"/>
+	<SubTexture name="blueTome" x="101" y="93" width="42" height="42"/>
+	<SubTexture name="greenTome" x="54" y="0" width="48" height="47"/>
+	<SubTexture name="staff" x="54" y="97" width="45" height="46"/>
+	<SubTexture name="redDragon" x="0" y="114" width="52" height="55"/>
+	<SubTexture name="blueDragon" x="100" y="193" width="42" height="42"/>
+	<SubTexture name="greenDragon" x="0" y="171" width="48" height="47"/>
+</TextureAtlas>

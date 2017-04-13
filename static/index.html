@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Phaser with a sprinkle of ES6 Dust!</title>
+	<link rel="stylesheet" href="styles/main.css">
+
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+	<script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+</head>
+<body>
+	<div class="container">
+		<div class="row">
+			<div class="col">
+				<div id="canvas"></div>
+			</div>
+
+			<div id="ui" class="col">
+				<!-- Input area -->
+				<div class="row">
+					<ul class="nav nav-tabs" role="tablist">
+						<li class="nav-item">
+							<a class="nav-link active" data-toggle="tab" href="#units" role="tab">Units</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" data-toggle="tab" href="#turns" role="tab">Turns</a>
+						</li>
+					</ul>
+					<div class="tab-content">
+						<div class="tab-pane active" id="units" role="tabpanel">
+							<div class="row m-2 mt-4">
+								<div class="col-2 mr-2">
+									<label class="col-form-label">Friendly</label>
+								</div>
+								<div class="col btn-group">
+									<button type="button" data-idx=1 class="char-select btn btn-secondary">1</button>
+									<button type="button" data-idx=2 class="char-select btn btn-secondary">2</button>
+									<button type="button" data-idx=3 class="char-select btn btn-secondary">3</button>
+									<button type="button" data-idx=4 class="char-select btn btn-secondary">4</button>
+								</div>
+							</div>
+
+							<div class="row m-2 mb-4">
+								<div class="col-2 mr-2">
+									<label class="col-form-label">Enemy</label>
+								</div>
+								<div class="col btn-group">
+									<button type="button" data-idx=5 class="char-select btn btn-secondary">1</button>
+									<button type="button" data-idx=6 class="char-select btn btn-secondary">2</button>
+									<button type="button" data-idx=7 class="char-select btn btn-secondary">3</button>
+									<button type="button" data-idx=8 class="char-select btn btn-secondary">4</button>
+								</div>
+							</div>
+
+							<input type="hidden" id="selected-character">
+
+							<hr>
+
+							<div class="row m-2 mt-4">
+								<form id="name-form" class="col-6 mb-4">
+									<span id="unit-name">No Unit Selected</span>
+								</form>
+
+								<form id="type-form" class="col-6 mb-4">
+									<select class="form-control form-control-sm" id="type">
+										<option value="sword">Red Sword</option>
+										<option value="axe">Green Axe</option>
+										<option value="lance">Blue Lance</option>
+										<option value="redTome">Red Tome</option>
+										<option value="greenTome">Green Tome</option>
+										<option value="blueTome">Blue Tome</option>
+										<option value="redDragon">Red Dragon</option>
+										<option value="greenDragon">Green Dragon</option>
+										<option value="blueDragon">Blue Dragon</option>
+										<option value="bow">Bow</option>
+										<option value="dagger">Dagger</option>
+										<option value="staff">Staff</option>
+									</select>
+								</form>
+
+								<form id="stats-form" class="col-4">
+									<div class="form-group row">
+										<label for="hp" class="col-sm-2 col-form-label form-control-sm">HP</label>
+										<div class="col-sm-10">
+											<input type="text" class="form-control form-control-sm" id="hp">
+										</div>
+									</div>
+
+									<div class="form-group row">
+										<label for="atk" class="col-sm-2 col-form-label form-control-sm">Atk</label>
+										<div class="col-sm-10">
+											<input type="text" class="form-control form-control-sm" id="atk">
+										</div>
+									</div>
+
+									<div class="form-group row">
+										<label for="spd" class="col-sm-2 col-form-label form-control-sm">Spd</label>
+										<div class="col-sm-10">
+											<input type="text" class="form-control form-control-sm" id="spd">
+										</div>
+									</div>
+
+									<div class="form-group row">
+										<label for="def" class="col-sm-2 col-form-label form-control-sm">Def</label>
+										<div class="col-sm-10">
+											<input type="text" class="form-control form-control-sm" id="def">
+										</div>
+									</div>
+
+									<div class="form-group row">
+										<label for="res" class="col-sm-2 col-form-label form-control-sm">Res</label>
+										<div class="col-sm-10">
+											<input type="text" class="form-control form-control-sm" id="res">
+										</div>
+									</div>
+								</form>
+
+								<form id="skills-form" class="col-8">
+									<div class="form-group row">
+										<label for="weapon" class="col-sm-2 col-form-label form-control-sm">Weap</label>
+										<div class="col-sm-10">
+											<select class="form-control form-control-sm" id="weapon">
+												<option>Ruby Sword</option>
+												<option>Silver Sword</option>
+												<option>Sol Katti</option>
+											</select>
+										</div>
+									</div>
+
+									<div class="form-group row">
+										<label for="assist" class="col-sm-2 col-form-label form-control-sm">Asst</label>
+										<div class="col-sm-10">
+											<select class="form-control form-control-sm" id="assist">
+												<option>None</option>
+												<option>Shove</option>
+											</select>
+										</div>
+									</div>
+
+									<div class="form-group row">
+										<label for="special" class="col-sm-2 col-form-label form-control-sm">Spec</label>
+										<div class="col-sm-10">
+											<select class="form-control form-control-sm" id="special">
+												<option>Luna</option>
+												<option>Sol</option>
+											</select>
+										</div>
+									</div>
+
+									<div class="form-group row">
+										<label for="a-skill" class="col-sm-2 col-form-label form-control-sm">A</label>
+										<div class="col-sm-10">
+											<select class="form-control form-control-sm" id="a-skill">
+												<option>Defiant Atk 3</option>
+												<option>Death Blow 2</option>
+											</select>
+										</div>
+									</div>
+
+									<div class="form-group row">
+										<label for="b-skill" class="col-sm-2 col-form-label form-control-sm">B</label>
+										<div class="col-sm-10">
+											<select class="form-control form-control-sm" id="b-skill">
+												<option>Obstruct 2</option>
+												<option>Wings of Mercy 2</option>
+											</select>
+										</div>
+									</div>
+
+									<div class="form-group row">
+										<label for="c-skill" class="col-sm-2 col-form-label form-control-sm">C</label>
+										<div class="col-sm-10">
+											<select class="form-control form-control-sm" id="c-skill">
+												<option>Fortify Def 3</option>
+												<option>Threaten Res 3</option>
+											</select>
+										</div>
+									</div>
+								</form>
+							</div>
+						</div>
+						<div class="tab-pane" id="turns" role="tabpanel">
+						</div>
+					</div>
+				</div>
+
+				<!-- Battle preview area -->
+				<div id="battle-preview" class="row">
+					<div class="col text-center">
+						<div class="row">
+							<div id="attacker-name" class="col text-center">Anna</div>
+						</div>
+						<div class="row">
+							<div id="attacker-hp" class="col text-center">
+								<span id="attacker-hp-start">40</span> &#8658; <span id="attacker-hp-end">25</span>
+							</div>
+						</div>
+						<div class="row">
+							<div id="attacker-dmg" class="col text-center">
+								<span id="attacker-dmg-strike">16</span> <span id="attacker-dmg-mult">x4</span>
+							</div>
+						</div>
+					</div>
+
+					<div class="col text-center">
+						<div class="row">
+							<div class="col text-center">&nbsp;</div>
+						</div>
+						<div class="row">
+							<div class="col text-center">HP</div>
+						</div>
+						<div class="row">
+							<div class="col text-center">Atk</div>
+						</div>
+					</div>
+
+					<div class="col text-center">
+						<div class="row">
+							<div id="defender-name" class="col text-center">Zach</div>
+						</div>
+						<div class="row">
+							<div id="defender-hp" class="col text-center">
+								<span id="defender-hp-start">40</span> &#8658; <span id="defender-hp-end">25</span>
+							</div>
+						</div>
+						<div class="row">
+							<div id="defender-dmg" class="col text-center">
+								<span id="defender-dmg-strike">15</span> <span id="defender-dmg-mult"></span>
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+
+	<script src="scripts/phaser.min.js"></script>
+	<script src="scripts/phaser_pathfinding-0.2.0.js"></script>
+	<script src="scripts/lodash.min.js"></script>
+	<script src="scripts/game.js"></script>
+</body>
+</html>
