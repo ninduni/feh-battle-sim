@@ -107,7 +107,7 @@ $('.char-select').click(function() {
 // Updates the skill list based on type restrictions
 function updateSkillLists() {
 
-	var newWeapons = _.keys(_.pickBy(weaponInfo, (w) => w['type'] === $('#type').val()))
+	var newWeapons = _.keys(_.pickBy(weaponInfo, (w) => w.type === $('#type').val()));
 	$('#weapon').empty();
 	newWeapons.forEach((w) => {
 		$('#weapon').append($("<option></option>")

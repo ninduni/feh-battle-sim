@@ -43,7 +43,7 @@ class GameState extends Phaser.State {
             assistSelectorGroup = this.add.group();
         this.debugGridGroup = this.add.group();
         var style = { font: "25px Arial", fill: "#ffffff", align: "left",
-                      stroke: "#000000", strokeThickness: 2 }
+                      stroke: "#000000", strokeThickness: 2 };
         for (var x = 0; x < this.game.maxGridX; x++) {
             for (var y = 0; y < this.game.maxGridY; y++) {
                 var r = redOverlayGroup.create(90 * x, 90 * y, 'red'),
@@ -68,7 +68,7 @@ class GameState extends Phaser.State {
                     moveSelector: m,
                     assistSelector: s,
                     debugGrid: d
-                }
+                };
             }
         }
 
@@ -81,7 +81,7 @@ class GameState extends Phaser.State {
                              attackRange: 1,
                              asset: 'anna',
                              type: 'axe',
-                             id: 1})
+                             id: 1});
         anna.skills.weapon = 'Silver Axe';
         anna.skills.assist = 'swap';
         this.game.anna = anna;
@@ -94,7 +94,7 @@ class GameState extends Phaser.State {
                              attackRange: 2,
                              asset: 'zach',
                              type: 'blueTome',
-                             id: 2})
+                             id: 2});
         zach.skills.weapon = 'Thoron';
         this.game.zach = zach;
         this.game.grid[6][2].unit = zach.id;
@@ -106,7 +106,7 @@ class GameState extends Phaser.State {
                              attackRange: 1,
                              asset: 'draug',
                              type: 'sword',
-                             id: 5})
+                             id: 5});
         draug.skills.weapon = 'Brave Sword';
         this.game.draug = draug;
         this.game.grid[2][5].unit = draug.id;
@@ -118,7 +118,7 @@ class GameState extends Phaser.State {
                              attackRange: 1,
                              asset: 'caeda',
                              type: 'sword',
-                             id: 6})
+                             id: 6});
         caeda.skills.weapon = 'Silver Sword';
         this.game.caeda = caeda;
         this.game.grid[5][2].unit = caeda.id;

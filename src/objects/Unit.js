@@ -29,7 +29,7 @@ export default class Unit extends Phaser.Sprite {
             spd: 0,
             def: 0,
             res: 0,
-        }
+        };
         this.stats.totalhp = this.stats.hp;
 
         // Set up skills
@@ -40,7 +40,7 @@ export default class Unit extends Phaser.Sprite {
             Askill: null,
             Bskill: null,
             Cskill: null
-        }
+        };
 
         this.dead = false;
         this.turnEnded = false;
@@ -54,7 +54,7 @@ export default class Unit extends Phaser.Sprite {
         this.events.onInputDown.add(this.onClick, this);
         this.game.stage.addChild(this);
 
-        this.hoverTarget = {x: null, y: null}
+        this.hoverTarget = {x: null, y: null};
 
         this.dragging = false;
 
@@ -74,7 +74,7 @@ export default class Unit extends Phaser.Sprite {
 
         // Health text
         var style = { font: "12px Arial", fill: "#ffffff", align: "left",
-                      stroke: "#000000", strokeThickness: 2 }
+                      stroke: "#000000", strokeThickness: 2 };
         // this.healthbarText = this.game.add.text(-35, 37, this.stats.hp, style);
         var font = (this.isFriendly()) ? 'bluefont' : 'redfont';
         this.healthbarText = this.game.add.bitmapText(-35, 25, font, this.stats.hp, 30);
@@ -125,7 +125,7 @@ export default class Unit extends Phaser.Sprite {
 
                 // this.clearSelectors(this.hoverTarget.x, this.hoverTarget.y);
                 this.clearAllSelectors();
-                this.hoverTarget = {x: toGrid(this.x), y: toGrid(this.y)}
+                this.hoverTarget = {x: toGrid(this.x), y: toGrid(this.y)};
 
                 // If we hover over an endable square, add this new target to the hover history list,
                 // or move it to the front
@@ -204,7 +204,7 @@ export default class Unit extends Phaser.Sprite {
         this.healthbar.clear();
         var x = (this.stats.hp / this.stats.totalhp) * 100;
         var colour = utils.rgbToHex((x > 50 ? 1-2*(x-50)/100.0 : 1.0) * 255, (x > 50 ? 1.0 : 2*x/100.0) * 255, 0);
-        colour = (this.isFriendly()) ? 0x64d2ea : 0xcf5568
+        colour = (this.isFriendly()) ? 0x64d2ea : 0xcf5568;
         this.healthbar.beginFill(colour);
         this.healthbar.lineStyle(5, colour, 1);
         this.healthbar.moveTo(0,-5);
@@ -263,7 +263,7 @@ export default class Unit extends Phaser.Sprite {
             case 'swap':
                 console.log('swapping');
                 // Set the target's position to the unit's, and the unit's to the target's
-                var targetPos = {x: target.x, y: target.y}
+                var targetPos = {x: target.x, y: target.y};
                 target.x = fromGrid(assistPos.x);
                 target.y = fromGrid(assistPos.y);
                 target.updateUnitPosition();
@@ -289,7 +289,7 @@ export default class Unit extends Phaser.Sprite {
         }
 
         this.dragging = true;
-        this.hoverTarget = {x: toGrid(this.x), y: toGrid(this.y)}
+        this.hoverTarget = {x: toGrid(this.x), y: toGrid(this.y)};
         this.hoverHistory = [this.hoverTarget];
 
         this.bringToTop();
@@ -308,7 +308,7 @@ export default class Unit extends Phaser.Sprite {
 
     onDragStop() {
         this.dragging = false;
-        this.hoverTarget = {x: null, y: null}
+        this.hoverTarget = {x: null, y: null};
 
         // If we drag off the map, reset (failsafe for if this check in update doesn't catch it)
         if (toGrid(this.x) >= this.game.maxGridX ||
@@ -331,7 +331,7 @@ export default class Unit extends Phaser.Sprite {
         // If we selected an attack, run the battle, then place us in the correct attack position
         var attackPos = this.getAttackPos();
         if (attackPos !== null) {
-            console.log('attacking!')
+            console.log('attacking!');
             var target = this.game.grid[toGrid(this.y)][toGrid(this.x)].unit;
             console.log(this.name + ' is attacking ' + this.game.units[target].name);
             this.attack(this.game.units[target]);
@@ -420,7 +420,7 @@ export default class Unit extends Phaser.Sprite {
             for (var j = 0; j < attackableList.length; j++) {
                 if (this.hoverHistory[i].x === attackableList[j].x && this.hoverHistory[i].y === attackableList[j].y) {
                     // Found a square we can attack from!
-                    return {x: attackableList[j].x, y: attackableList[j].y}
+                    return {x: attackableList[j].x, y: attackableList[j].y};
                 }
             }
         }
@@ -445,7 +445,7 @@ export default class Unit extends Phaser.Sprite {
             for (var j = 0; j < assistableList.length; j++) {
                 if (this.hoverHistory[i].x === assistableList[j].x && this.hoverHistory[i].y === assistableList[j].y) {
                     // Found a square we can attack from!
-                    return {x: assistableList[j].x, y: assistableList[j].y}
+                    return {x: assistableList[j].x, y: assistableList[j].y};
                 }
             }
         }
@@ -563,7 +563,7 @@ export default class Unit extends Phaser.Sprite {
                             // (i.e. ones we can move to/through, but not end on)
                             // Only push attackable space on first valid candidate
                             if (moveableGrid[y][x] !== 1 && !foundAttack) {
-                                validAttacks.push({x: x, y: y})
+                                validAttacks.push({x: x, y: y});
                                 foundAttack = true;
                             }
                         }
@@ -607,7 +607,7 @@ export default class Unit extends Phaser.Sprite {
                             // (i.e. ones we can move to/through, but not end on)
                             // Only push attackable space on first valid candidate
                             if (!foundAssist) {
-                                validAssists.push({x: x, y: y})
+                                validAssists.push({x: x, y: y});
                                 foundAssist = true;
                             }
                         }
@@ -636,9 +636,9 @@ export default class Unit extends Phaser.Sprite {
     hideMoves() {
         for (var x = 0; x < this.game.maxGridX; x++) {
             for (var y = 0; y < this.game.maxGridY; y++) {
-                this.game.grid[y][x].blueOverlay.visible = false
-                this.game.grid[y][x].redOverlay.visible = false
-                this.game.grid[y][x].greenOverlay.visible = false
+                this.game.grid[y][x].blueOverlay.visible = false;
+                this.game.grid[y][x].redOverlay.visible = false;
+                this.game.grid[y][x].greenOverlay.visible = false;
             }
         }
     }
