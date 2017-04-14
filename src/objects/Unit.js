@@ -1,12 +1,13 @@
 import * as utils from 'helpers/utils';
 import { BattleCalc } from 'helpers/BattleCalculator';
 import { assistInfo } from 'skills/assist';
+import HealthBar from 'objects/HealthBar';
 
 export default class Unit extends Phaser.Sprite {
 
     constructor({game, gridX, gridY, movementType, attackRange, asset, type, id}) {
         super(game, 90 * gridX, 90 * gridY, asset);
-        this.game = game;
+        // this.game = game;
         this.name = asset; // Not unique!
         this.id = id;
         this.movementType = movementType;
@@ -58,28 +59,8 @@ export default class Unit extends Phaser.Sprite {
 
         this.dragging = false;
 
-        // Healthbar
-        var hbBG = this.game.add.graphics(-25.5, 40);
-        hbBG.anchor.setTo(0.5);
-        this.addChild(hbBG);
-        hbBG.beginFill(0x000000);
-        hbBG.lineStyle(6.5, 0x000000, 1);
-        hbBG.moveTo(0,-5);
-        hbBG.lineTo(51, -5);
-        hbBG.endFill();
-
-        this.healthbar = this.game.add.graphics(-25, 40);
-        this.healthbar.anchor.setTo(0.5);
-        this.addChild(this.healthbar);
-
-        // Health text
-        var style = { font: "12px Arial", fill: "#ffffff", align: "left",
-                      stroke: "#000000", strokeThickness: 2 };
-        // this.healthbarText = this.game.add.text(-35, 37, this.stats.hp, style);
-        var font = (this.isFriendly()) ? 'bluefont' : 'redfont';
-        this.healthbarText = this.game.add.bitmapText(-35, 25, font, this.stats.hp, 30);
-        this.healthbarText.anchor.setTo(0.5);
-        this.addChild(this.healthbarText);
+        // Creates the healthbar object, which will individually add all components as children of this unit
+        this.healthbar = new HealthBar(this.game, this, this.isFriendly(), this.stats.hp);
 
         // Type Icon
         this.typeIcon = this.game.add.sprite(-35, -35, 'types', this.type);
@@ -90,19 +71,8 @@ export default class Unit extends Phaser.Sprite {
         // Flip unit horizontally if on enemy team
         if (!this.isFriendly()) {
             this.scale.x = -1;
-            this.healthbarText.scale.x = -1;
-            this.healthbarText.x *= -1;
-            this.healthbar.scale.x = -1;
-            this.healthbar.x *= -1;
-            hbBG.scale.x = -1;
-            hbBG.x *= -1;
+            this.healthbar.flip();
         }
-    }
-
-    stopDrag() {
-        // Forceably stops a drag
-        this.input.disableDrag();
-        this.input.enableDrag();
     }
 
     update() {
@@ -123,8 +93,7 @@ export default class Unit extends Phaser.Sprite {
                     this.onDragStop();
                 }
 
-                // this.clearSelectors(this.hoverTarget.x, this.hoverTarget.y);
-                this.clearAllSelectors();
+                this.game.gridObj.hideSelectors();
                 this.hoverTarget = {x: toGrid(this.x), y: toGrid(this.y)};
 
                 // If we hover over an endable square, add this new target to the hover history list,
@@ -143,23 +112,23 @@ export default class Unit extends Phaser.Sprite {
 
                 // Check if we're over an enemy and draw combat stats
                 var attackPos = this.getAttackPos();
-                // if (this.isOpposingTeam(hoverUnit)) {
                 if (attackPos !== null) {
                     var target = this.game.units[hoverUnit];
                     var battleResult = BattleCalc.dryRun(this, target);
-                    this.game.grid[toGrid(this.y)][toGrid(this.x)].attackSelector.visible = true;
-                    this.game.grid[attackPos.y][attackPos.x].moveSelector.visible = true;
+
+                    this.game.grid[toGrid(this.y)][toGrid(this.x)].showAttack();
+                    this.game.grid[attackPos.y][attackPos.x].showMove();
                     this.game.displayBattleText(this, target, battleResult);
                 } else {
                     this.game.clearBattleText();
-                    this.game.grid[toGrid(this.y)][toGrid(this.x)].moveSelector.visible = true;
+                    this.game.grid[toGrid(this.y)][toGrid(this.x)].showMove();
                 }
             }
         }
 
         // Handle redrawing HP bar when health changes
         if (this.stats._lasthp !== this.stats.hp) {
-            this.redrawHPBar();
+            this.updateHP();
 
             if (this.stats.hp <= 0) {
                 // Remove from game (set invisible and clear from grid)
@@ -170,13 +139,6 @@ export default class Unit extends Phaser.Sprite {
         }
     }
 
-    endTurn() {
-        this.turnEnded = true;
-        // Grey out the sprite
-        this.tint = 0x888888;
-        this.input.disableDrag();
-    }
-
     startTurn() {
         this.turnEnded = false;
         // Undo grey
@@ -184,35 +146,16 @@ export default class Unit extends Phaser.Sprite {
         this.input.enableDrag();
     }
 
-    clearSelectors(x, y) {
-        this.game.grid[y][x].attackSelector.visible = false;
-        this.game.grid[y][x].moveSelector.visible = false;
-        this.game.grid[y][x].assistSelector.visible = false;
+    endTurn() {
+        this.turnEnded = true;
+        // Grey out the sprite
+        this.tint = 0x888888;
+        this.input.disableDrag();
     }
 
-    clearAllSelectors() {
-        for (var x = 0; x < this.game.maxGridX; x++) {
-            for (var y = 0; y < this.game.maxGridY; y++) {
-                this.game.grid[y][x].attackSelector.visible = false;
-                this.game.grid[y][x].moveSelector.visible = false;
-                this.game.grid[y][x].assistSelector.visible = false;
-            }
-        }
-    }
-
-    redrawHPBar() {
-        this.healthbar.clear();
-        var x = (this.stats.hp / this.stats.totalhp) * 100;
-        var colour = utils.rgbToHex((x > 50 ? 1-2*(x-50)/100.0 : 1.0) * 255, (x > 50 ? 1.0 : 2*x/100.0) * 255, 0);
-        colour = (this.isFriendly()) ? 0x64d2ea : 0xcf5568;
-        this.healthbar.beginFill(colour);
-        this.healthbar.lineStyle(5, colour, 1);
-        this.healthbar.moveTo(0,-5);
-        this.healthbar.lineTo(50 * this.stats.hp / this.stats.totalhp, -5);
-        this.healthbar.endFill();
-
+    updateHP() {
+        this.healthbar.redraw(this.stats.hp, this.stats.totalhp);
         this.stats._lasthp = this.stats.hp;
-        this.healthbarText.text = this.stats.hp;
     }
 
     setMovementType() {
@@ -260,7 +203,7 @@ export default class Unit extends Phaser.Sprite {
     assist(target, assistPos) {
         // Return true if all the movement/repositioning effects for THIS UNIT happened during this method
         switch(this.skills.assist) {
-            case 'swap':
+            case 'Swap':
                 console.log('swapping');
                 // Set the target's position to the unit's, and the unit's to the target's
                 var targetPos = {x: target.x, y: target.y};
@@ -320,8 +263,8 @@ export default class Unit extends Phaser.Sprite {
         }
 
         this.snapToGrid();
-        this.hideMoves();
-        this.clearAllSelectors();
+        // Hide all selectors and overlay
+        this.game.gridObj.hideAll();
 
         // If we are back where we started, don't end the turn
         if (toGrid(this.x) === toGrid(this.lastX) && toGrid(this.y) === toGrid(this.lastY)) {
@@ -373,8 +316,9 @@ export default class Unit extends Phaser.Sprite {
         this.endTurn();
 
         // DEBUG
-        // this.debugGameGrid('unit');
+        this.game.gridObj.debugGridShowProp('unit');
     }
+
 
     updateUnitPosition() {
         // Check to make sure that the last position equals this unit's ID, and zero it out
@@ -383,30 +327,6 @@ export default class Unit extends Phaser.Sprite {
             this.game.grid[toGrid(this.lastY)][toGrid(this.lastX)].unit = 0;
         }
         this.game.grid[toGrid(this.y)][toGrid(this.x)].unit = this.id;
-    }
-
-    isOpposingTeam(unitID) {
-        // Checks another unit's id, and returns whether that unit is on the same team as this unit
-        // Returns false if
-        if (unitID === 0) {
-            return null; // No unit in this square
-        } else {
-            return ((unitID - 5) ^ (this.id - 5)) < 0;
-        }
-    }
-
-    isSameTeam(unitID) {
-        // Returns true if unitID is on the same team as this unit (but not if we're comparing this unit to itself)
-        if (unitID === 0) {
-            return null;
-        } else {
-            return ((unitID - 5) ^ (this.id - 5)) > 0;
-        }
-    }
-
-    isFriendly() {
-        // Returns whether THIS unit is on the enemy or "red" team
-        return this.id <= 4;
     }
 
     getAttackPos() {
@@ -483,10 +403,6 @@ export default class Unit extends Phaser.Sprite {
         tmpGrid[toGrid(this.y)][toGrid(this.x)] = 1;
         this.game.pathfinder.setGrid(tmpGrid);
         this.setMovementType();
-    }
-
-    canPassUnit(unitID) {
-        return !this.isOpposingTeam(unitID);
     }
 
     getValidMoves() {
@@ -628,44 +544,48 @@ export default class Unit extends Phaser.Sprite {
 
     showMoveAttackOverlay() {
         this.validMoves.forEach((move) => {
-            this.game.grid[move.y][move.x].blueOverlay.visible = true;
+            this.game.grid[move.y][move.x].showBlue();
         });
         this.validAttacks.forEach((attack) => {
-            this.game.grid[attack.y][attack.x].redOverlay.visible = true;
+            this.game.grid[attack.y][attack.x].showRed();
         });
         this.validAssists.forEach((attack) => {
-            this.game.grid[attack.y][attack.x].greenOverlay.visible = true;
+            this.game.grid[attack.y][attack.x].showGreen();
         });
     }
 
-    hideMoves() {
-        for (var x = 0; x < this.game.maxGridX; x++) {
-            for (var y = 0; y < this.game.maxGridY; y++) {
-                this.game.grid[y][x].blueOverlay.visible = false;
-                this.game.grid[y][x].redOverlay.visible = false;
-                this.game.grid[y][x].greenOverlay.visible = false;
-            }
+    stopDrag() {
+        // Forceably stops a drag
+        this.input.disableDrag();
+        this.input.enableDrag();
+    }
+
+    isOpposingTeam(unitID) {
+        // Checks another unit's id, and returns whether that unit is on the same team as this unit
+        // Returns false if
+        if (unitID === 0) {
+            return null; // No unit in this square
+        } else {
+            return ((unitID - 5) ^ (this.id - 5)) < 0;
         }
     }
 
-    debugGridShow(grid) {
-        var state = game.state.getCurrentState();
-        state.debugGridShow(grid);
-    }
-
-    debugGameGrid(prop) {
-        var tmpGrid = utils.createArray(this.game.maxGridY, this.game.maxGridX);
-        for (var x = 0; x < this.game.maxGridX; x++) {
-            for (var y = 0; y < this.game.maxGridY; y++) {
-                tmpGrid[y][x] = this.game.grid[y][x][prop];
-            }
+    isSameTeam(unitID) {
+        // Returns true if unitID is on the same team as this unit (but not if we're comparing this unit to itself)
+        if (unitID === 0) {
+            return null;
+        } else {
+            return ((unitID - 5) ^ (this.id - 5)) > 0;
         }
-        this.debugGridShow(tmpGrid);
     }
 
-    debugGridOff() {
-        var state = game.state.getCurrentState();
-        state.debugGridOff();
+    isFriendly() {
+        // Returns whether THIS unit is on the enemy or "red" team
+        return this.id <= 4;
+    }
+
+    canPassUnit(unitID) {
+        return !this.isOpposingTeam(unitID);
     }
 }
 

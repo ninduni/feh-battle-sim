@@ -75,7 +75,17 @@ class Game extends Phaser.Game {
 
 var game = new Game();
 window.game = game;
-$('#battle-preview').hide();
+
+$(document).ready(function() {
+	$('#battle-preview').hide();
+
+	$('#assist').empty();
+	_.keys(assistInfo).forEach((a) => {
+		$('#assist').append($("<option></option>")
+			.attr('value', a).text(a));
+	});
+});
+
 
 
 $('#stats-form').on('focusout', function() {
@@ -106,7 +116,6 @@ $('.char-select').click(function() {
 
 // Updates the skill list based on type restrictions
 function updateSkillLists() {
-
 	var newWeapons = _.keys(_.pickBy(weaponInfo, (w) => w.type === $('#type').val()));
 	$('#weapon').empty();
 	newWeapons.forEach((w) => {

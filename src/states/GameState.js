@@ -1,4 +1,5 @@
 import Unit from 'objects/Unit';
+import Grid from 'objects/Grid';
 import { createArray } from 'helpers/utils';
 import { assistInfo } from 'skills/assist';
 import { weaponInfo } from 'skills/weapon';
@@ -30,47 +31,9 @@ class GameState extends Phaser.State {
         ];
 
         // Global grid object stores data about many things related to each square
-        this.game.grid = createArray(this.game.maxGridY, this.game.maxGridX);
-
-        // Create sprites that live on every grid square
-        // We're doing it this way so that we don't have to create/destroy new sprites all the time, but it may
-        // cost more to place them all at once like this.
-        var blueOverlayGroup = this.add.group(),
-            redOverlayGroup = this.add.group(),
-            greenOverlayGroup = this.add.group(),
-            attackSelectorGroup = this.add.group(),
-            moveSelectorGroup = this.add.group(),
-            assistSelectorGroup = this.add.group();
-        this.debugGridGroup = this.add.group();
-        var style = { font: "25px Arial", fill: "#ffffff", align: "left",
-                      stroke: "#000000", strokeThickness: 2 };
-        for (var x = 0; x < this.game.maxGridX; x++) {
-            for (var y = 0; y < this.game.maxGridY; y++) {
-                var r = redOverlayGroup.create(90 * x, 90 * y, 'red'),
-                    b = blueOverlayGroup.create(90 * x, 90 * y, 'blue'),
-                    g = greenOverlayGroup.create(90 * x, 90 * y, 'green'),
-                    a = attackSelectorGroup.create(90 * x, 90 * y, 'selectors', 'selector-attack'),
-                    m = moveSelectorGroup.create(90 * x, 90 * y, 'selectors', 'selector-move'),
-                    s = assistSelectorGroup.create(90 * x, 90 * y, 'selectors', 'selector-assist'),
-                    d = this.add.text(90 * x, 90 * y, '', style, this.debugGridGroup); // Mandatory for adding text to group
-
-                r.visible = b.visible = g.visible = a.visible = m.visible = s.visible = d.visible = false;
-                r.alpha = b.alpha = 0.5;
-                a.alpha = m.alpha = s.alpha = 0.75;
-
-                this.game.grid[y][x] = {
-                    terrain: this.game.terrainGrid[y][x],
-                    unit: 0, // Will contain the ID of the unit at this position
-                    redOverlay: r,
-                    blueOverlay: b,
-                    greenOverlay: g,
-                    attackSelector: a,
-                    moveSelector: m,
-                    assistSelector: s,
-                    debugGrid: d
-                };
-            }
-        }
+        this.game.gridObj = new Grid(game, this.add, this.game.terrainGrid, this.game.maxGridX, this.game.maxGridY);
+        // Slightly shorter lookup function
+        this.game.grid = this.game.gridObj.map;
 
         // Add units
         this.game.units = [];
@@ -137,7 +100,8 @@ class GameState extends Phaser.State {
         this.game.playerPhaseBanner.alpha = 0;
 
 
-
+        var style = { font: "25px Arial", fill: "#ffffff", align: "left",
+                      stroke: "#000000", strokeThickness: 2 };
         this.game.turnText = this.game.add.text(200, 735, 'Player Phase', style);
     }
 
@@ -182,24 +146,6 @@ class GameState extends Phaser.State {
         unit.type = type;
         unit.typeIcon.frameName = type;
         unit.setAttackRange();
-    }
-
-    debugGridShow(grid) {
-        for (var x = 0; x < this.game.maxGridX; x++) {
-            for (var y = 0; y < this.game.maxGridY; y++) {
-                this.game.grid[y][x].debugGrid.text = grid[y][x];
-                this.game.grid[y][x].debugGrid.visible = true;
-            }
-        }
-        this.game.world.bringToTop(this.debugGridGroup);
-    }
-
-    debugGridOff() {
-        for (var x = 0; x < this.game.maxGridX; x++) {
-            for (var y = 0; y < this.game.maxGridY; y++) {
-                this.game.grid.debugGrid[y][x].visible = false;
-            }
-        }
     }
 }
 

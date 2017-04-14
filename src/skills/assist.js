@@ -1,117 +1,95 @@
 // command skill data
 export const assistInfo =
 {
-    "ardent_sacrifice" : {
+    "Ardent Sacrifice" : {
         "description" : "Heals adjacent ally 10 HP. Unit loses 10 HP.",
-        "weaponRestrict" : "Staff",
-        "fullName": "Ardent Sacrifice"
+        "weapon_restrict" : "Staff"
     },
-    "dance" : {
+    "Dance" : {
         "description" : "Enables target to take another action. Cannot be used on units with Sing or Dance.",
-        "charUnique" : true,
-        "fullName": "Dance"
+        "char_unique" : true
     },
-    "draw_back" : {
+    "Draw Back" : {
         "description" : "Unit moves 1 space away from target ally, who moves to unit's former position.",
-        "weaponRestrict" : "Staff",
-        "fullName": "Draw Back"
+        "weapon_restrict" : "Staff"
     },
-    "harsh_command" : {
+    "Harsh Command" : {
         "description" : "Converts penalties on target into bonuses.",
-        "weaponRestrict" : "Staff",
-        "fullName": "Harsh Command"
+        "weapon_restrict" : "Staff"
     },
-    "heal" : {
+    "Heal" : {
         "description" : "Restores 5 HP.",
-        "weaponUnique" : "Staff",
-        "fullName": "Heal"
+        "weapon_unique" : "Staff"
     },
-    "martyr" : {
+    "Martyr" : {
         "description" : "Restores 7 HP plus this unit's suffered damage. Unit heals 50% of suffered damage. Slows Special trigger (cooldown count+1).",
-        "specCooldownMod" : 1,
-        "weaponUnique" : "Staff",
-        "fullName": "Martyr"
+        "spec_cooldown_mod" : 1,
+        "weapon_unique" : "Staff"
     },
-    "mend" : {
+    "Mend" : {
         "description" : "Restores 10 HP.",
-        "weaponUnique" : "Staff",
-        "fullName": "Mend"
+        "weapon_unique" : "Staff"
     },
-    "physic" : {
+    "Physic" : {
         "description" : "Restores 8 HP to target 2 spaces away.",
-        "weaponUnique" : "Staff",
-        "fullName": "Physic"
+        "weapon_unique" : "Staff"
     },
-    "pivot" : {
+    "Pivot" : {
         "description" : "Unit moves to opposite side of adjacent ally.",
-        "weaponRestrict" : "Staff",
-        "fullName": "Pivot"
+        "weapon_restrict" : "Staff"
     },
-    "rally_attack" : {
+    "Rally Attack" : {
         "description" : "Grants Atk+4 to an adjacent ally until the end of the turn.",
-        "weaponRestrict" : "Staff",
-        "fullName": "Rally Attack"
+        "weapon_restrict" : "Staff"
     },
-	"rally_defense" : {
-	    "description" : "Grants Def+4 to an adjacent ally until the end of the turn.",
-        "weaponRestrict" : "Staff",
-        "fullName": "Rally Defense"
-	},
-    "rally_resistance" : {
+    "Rally Defense" : {
+        "description" : "Grants Def+4 to an adjacent ally until the end of the turn.",
+        "weapon_restrict" : "Staff"
+    },
+    "Rally Resistance" : {
         "description" : "Grants Res+4 to an adjacent ally until the end of the turn.",
-        "weaponRestrict" : "Staff",
-        "fullName": "Rally Resistance"
+        "weapon_restrict" : "Staff"
     },
-    "rally_speed" : {
+    "Rally Speed" : {
         "description" : "Grants Spd+4 to an adjacent ally until the end of the turn.",
-        "weaponRestrict" : "Staff",
-        "fullName": "Rally Speed"
+        "weapon_restrict" : "Staff"
     },
-    "reciprocal_aid" : {
+    "Reciprocal Aid" : {
         "description" : "Swap HP with adjacent ally (neither unit can go above their max HP).",
-        "weaponRestrict" : "Staff",
-        "fullName": "Reciprocal Aid"
+        "weapon_restrict" : "Staff"
     },
-	"reconcile" : {
-	    "description" : "Restores 7 HP each to target and this unit.",
-        "weaponUnique" : "Staff",
-        "fullName": "Reconcile"
-	},
-    "recover" : {
+    "Reconcile" : {
+        "description" : "Restores 7 HP each to target and this unit.",
+        "weapon_unique" : "Staff"
+    },
+    "Recover" : {
         "description" : "Restores 15 HP. Slows Special trigger (cooldown count +1).",
-        "specCooldownMod" : 1,
-        "weaponUnique" : "Staff",
-        "fullName": "Recover"
+        "spec_cooldown_mod" : 1,
+        "weapon_unique" : "Staff"
     },
-    "rehabilitate" : {
+    "Rehabilitate" : {
         "description" : "Restores 7 HP or more the further below 50% the target's HP is. Slows Special trigger (cooldown count+1).",
-        "specCooldownMod" : 1,
-        "weaponUnique" : "Staff",
-        "fullName": "Rehabilitate"
+        "spec_cooldown_mod" : 1,
+        "weapon_unique" : "Staff"
     },
-    "reposition" : {
+    "Reposition" : {
         "description" : "Moves adjacent ally to opposite side of unit.",
-        "weaponRestrict" : "Staff",
-        "fullName": "Reposition"
+        "weapon_restrict" : "Staff"
     },
-    "shove" : {
+    "Shove" : {
         "description" : "Push adjacent ally 1 space away.",
-        "weaponRestrict" : "Staff",
-        "fullName": "Shove"
+        "weapon_restrict" : "Staff"
     },
-    "sing" : {
+    "Sing" : {
         "description" : "Enables target to take another action. Cannot be used on units with Sing or Dance.",
-        "charUnique" : true,
-        "fullName": "Sing"
+        "char_unique" : true
     },
-    "smite" : {
+    "Smite" : {
         "description" : "Push adjacent ally 2 spaces away.",
-        "weaponRestrict" : "Staff",
-        "fullName": "Smite"
+        "weapon_restrict" : "Staff"
     },
-    "swap" : {
+    "Swap" : {
         "description" : "Swap places with adjacent ally.",
-        "weaponRestrict" : "Staff",
-        "fullName": "Swap"
+        "weapon_restrict" : "Staff"
     }
 };
