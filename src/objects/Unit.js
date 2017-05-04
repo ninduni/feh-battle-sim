@@ -1,17 +1,19 @@
 import * as utils from 'helpers/utils';
-import { BattleCalc } from 'helpers/BattleCalculator';
+import { BattleCalc } from 'helpers/BC2';
+// import { BattleCalc } from 'helpers/BattleCalculator';
 import { assistInfo } from 'skills/assist';
+import { weaponInfo } from 'skills/weapon';
+import { specInfo } from 'skills/special';
 import HealthBar from 'objects/HealthBar';
 
 export default class Unit extends Phaser.Sprite {
 
-    constructor({game, gridX, gridY, movementType, attackRange, asset, type, id}) {
+    constructor({game, gridX, gridY, movementType, weapon, asset, type, id}) {
         super(game, 90 * gridX, 90 * gridY, asset);
         // this.game = game;
         this.name = asset; // Not unique!
         this.id = id;
         this.movementType = movementType;
-        this.attackRange = attackRange;
         this.assistRange = 1;
         this.type = type;
 
@@ -30,19 +32,33 @@ export default class Unit extends Phaser.Sprite {
             spd: 0,
             def: 0,
             res: 0,
+
+            bonusHP: 0, // Never used, but could be!
+            bonusAtk: 0,
+            bonusSpd: 0,
+            bonusDef: 0,
+            bonusRes: 0,
         };
         this.stats.totalhp = this.stats.hp;
 
         // Set up skills
-        this.skills = {
-            weapon: null,
-            assist: null,
-            special: null,
-            Askill: null,
-            Bskill: null,
-            Cskill: null
-        };
+        this.passiveAData = {};
+        this.passiveBData = {};
+        this.passiveCData = {};
 
+        this.weapon = weapon;
+        this.weaponData = weaponInfo[weapon];
+        this.color = this.weaponData.color;
+
+        this.assist = null;
+        this.assistData = assistInfo[this.assist] || {};
+
+        // Special counters
+        this.special = null;
+        this.specialData = specInfo[special] || {};
+        this.specCurrCooldown = this.specialData.cooldown;
+
+        // Bookkeeping
         this.dead = false;
         this.turnEnded = false;
 
@@ -68,10 +84,19 @@ export default class Unit extends Phaser.Sprite {
         this.typeIcon.scale.setTo(0.5);
         this.addChild(this.typeIcon);
 
+        // Special counter icon
+        this.specialText = this.game.add.bitmapText(-35, -20, 'special', this.specCurrCooldown, 30);
+        this.specialText.anchor.setTo(0.5);
+        this.addChild(this.specialText);
+
         // Flip unit horizontally if on enemy team
         if (!this.isFriendly()) {
             this.scale.x = -1;
             this.healthbar.flip();
+            this.typeIcon.scale.x = -0.5;
+
+            this.specialText.scale.x = -1;
+            // this.specialText.x *= -1;
         }
     }
 
@@ -114,6 +139,8 @@ export default class Unit extends Phaser.Sprite {
                 var attackPos = this.getAttackPos();
                 if (attackPos !== null) {
                     var target = this.game.units[hoverUnit];
+
+                    BattleCalc.prepare(this, target);
                     var battleResult = BattleCalc.dryRun(this, target);
 
                     this.game.grid[toGrid(this.y)][toGrid(this.x)].showAttack();
@@ -140,6 +167,11 @@ export default class Unit extends Phaser.Sprite {
     }
 
     startTurn() {
+        this.setTurnStart();
+    }
+
+    setTurnStart() {
+        // Resets the turn for this unit, skips running start of turn things
         this.turnEnded = false;
         // Undo grey
         this.tint = 0xffffff;
@@ -147,6 +179,15 @@ export default class Unit extends Phaser.Sprite {
     }
 
     endTurn() {
+        this.setTurnEnd();
+
+        this.game.state.states[this.game.state.current].saveTurnState(
+            this.name + ' moves'
+        );
+    }
+
+    setTurnEnd() {
+        // Ends the turn for this unit, skips running end of turn things
         this.turnEnded = true;
         // Grey out the sprite
         this.tint = 0x888888;
@@ -158,26 +199,36 @@ export default class Unit extends Phaser.Sprite {
         this.stats._lasthp = this.stats.hp;
     }
 
+    updateSpecCD(cd) {
+        this.specCurrCooldown = cd;
+        if (cd === undefined) {
+            this.specialText.text = '';
+        } else {
+            this.specialText.text = cd;
+        }
+
+    }
+
     setMovementType() {
         switch(this.movementType) {
-            case 'infantry':
+            case 'Infantry':
                 this.game.pathfinder.setAcceptableTiles([1,2]);
                 this.game.pathfinder.setTileCost(1, 1);
                 this.game.pathfinder.setTileCost(2, 2);
                 this.movement = 2;
                 break;
-            case 'cavalry':
+            case 'Cavalry':
                 this.game.pathfinder.setAcceptableTiles([1]);
                 this.game.pathfinder.setTileCost(1, 1);
                 this.movement = 3;
                 break;
-            case 'armor':
+            case 'Armor':
                 this.game.pathfinder.setAcceptableTiles([1,2]);
                 this.game.pathfinder.setTileCost(1, 1);
                 this.game.pathfinder.setTileCost(2, 1);
                 this.movement = 1;
                 break;
-            case 'flying':
+            case 'Flying':
                 this.game.pathfinder.setAcceptableTiles([1,2,3]);
                 this.game.pathfinder.setTileCost(1, 1);
                 this.game.pathfinder.setTileCost(2, 1);
@@ -187,22 +238,19 @@ export default class Unit extends Phaser.Sprite {
         }
     }
 
-    setAttackRange() {
-        this.attackRange = utils.attackRangeLookup(this.type);
-    }
-
     snapToGrid() {
         this.x = toGrid(this.x) * 90 + 45;
         this.y = toGrid(this.y) * 90 + 45;
     }
 
     attack(target) {
+        BattleCalc.prepare(this, target);
         BattleCalc.run(this, target);
     }
 
-    assist(target, assistPos) {
+    doAssist(target, assistPos) {
         // Return true if all the movement/repositioning effects for THIS UNIT happened during this method
-        switch(this.skills.assist) {
+        switch(this.assist) {
             case 'Swap':
                 console.log('swapping');
                 // Set the target's position to the unit's, and the unit's to the target's
@@ -288,7 +336,7 @@ export default class Unit extends Phaser.Sprite {
             console.log('assisting!');
             target = this.game.grid[toGrid(this.y)][toGrid(this.x)].unit;
             console.log(this.name + ' is assisting ' + this.game.units[target].name);
-            var handledMove = this.assist(this.game.units[target], assistPos);
+            var handledMove = this.doAssist(this.game.units[target], assistPos);
 
             // Some assists reposition us. If that one did not, then move to assisting position
             if (handledMove === false) {
@@ -316,7 +364,7 @@ export default class Unit extends Phaser.Sprite {
         this.endTurn();
 
         // DEBUG
-        this.game.gridObj.debugGridShowProp('unit');
+        // this.game.gridObj.debugGridShowProp('unit');
     }
 
 
@@ -473,7 +521,7 @@ export default class Unit extends Phaser.Sprite {
                 // Get all squares within range of current, check whether it is a movable
                 if (endableGrid[y][x] !== 1) {
                     var candidates = utils.pairsWithinNSpaces(x, y, this.game.maxGridX, this.game.maxGridY,
-                                                              this.attackRange);
+                                                              this.weaponData.range);
                     var foundAttack = false;
                     for (var i = 0, len = candidates.length; i < len; i++) {
                         // If we can move to a spot that this spot is attackable from...
@@ -500,7 +548,7 @@ export default class Unit extends Phaser.Sprite {
 
     getValidAssists(validMoves, validEndPositons) {
         // Assists only show up if we have an assist skill equipped
-        if (this.skills.assist == null) {
+        if (this.assist == null) {
             return [];
         }
 
@@ -586,6 +634,10 @@ export default class Unit extends Phaser.Sprite {
 
     canPassUnit(unitID) {
         return !this.isOpposingTeam(unitID);
+    }
+
+    hasWeapon() {
+        return this.weaponName !== 'None';
     }
 }
 

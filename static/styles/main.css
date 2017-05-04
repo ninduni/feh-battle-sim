@@ -13,3 +13,8 @@ body {
   justify-content: center;
   align-items: center;
 }
+
+.bonus-attr {
+  margin-left: -20px;
+  color: #30ab6d;
+}
