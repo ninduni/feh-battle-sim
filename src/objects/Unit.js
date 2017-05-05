@@ -42,18 +42,23 @@ export default class Unit extends Phaser.Sprite {
         this.stats.totalhp = this.stats.hp;
 
         // Set up skills
+        this.passiveA = null;
+        this.passiveB = null;
+        this.passiveC = null;
         this.passiveAData = {};
         this.passiveBData = {};
         this.passiveCData = {};
 
+        // Weapon
         this.weapon = weapon;
         this.weaponData = weaponInfo[weapon];
         this.color = this.weaponData.color;
 
+        // Assist
         this.assist = null;
         this.assistData = assistInfo[this.assist] || {};
 
-        // Special counters
+        // Special
         this.special = null;
         this.specialData = specInfo[special] || {};
         this.specCurrCooldown = this.specialData.cooldown;

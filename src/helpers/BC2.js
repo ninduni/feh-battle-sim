@@ -1,3 +1,5 @@
+import { TurnOrderCalc } from 'helpers/TurnOrder';
+
 class BC2 {
     prepare() {
 
@@ -5,10 +7,10 @@ class BC2 {
 
     run(attacker, defender) {
         var result = this.dryRun(attacker, defender);
-
+        console.log(result);
         // Set new HPs
-        attacker.stats.hp = result.attackerHP;
-        defender.stats.hp = result.defenderHP;
+        attacker.stats.hp = result.attackerHPAfterNonlethal;
+        defender.stats.hp = result.defenderHPAfterNonlethal;
         attacker.updateSpecCD(result.attackerSpecCD);
         defender.updateSpecCD(result.defenderSpecCD);
     }
@@ -19,8 +21,15 @@ class BC2 {
         // In this method, unlike the other methods of this class, ATTACKER refers to the initiator of the BATTLE,
         //   not the single round.
 
-        var damage, healAmt;
-        var moveList = this.determineTurnOrder(attacker, defender);
+        var damage = 0,
+            healAmt = 0,
+            aoeAtk = 0,
+            aoeDmg = 0,
+            aoeMod = 0;
+
+        var moveList = TurnOrderCalc.determineTurnOrder(attacker, defender);
+        console.log(moveList);
+        // var moveList = this.determineTurnOrder(attacker, defender);
 
         // Mutable things: store special cooldowns and health
         var attackerSpecCD = attacker.specCurrCooldown,
@@ -33,6 +42,22 @@ class BC2 {
         // Store flags for whether special went off, check between attacks
         this.atkSpec = false;
         this.defSpec = false;
+
+        // AOE damage before combat
+        if (attacker.specialData.hasOwnProperty("before_combat_aoe") && attackerSpecCD <= 0) {
+            // reset cooldown
+            attacker.specCurrCooldown = this.getSpecialCooldown(attacker.specialData, attacker.weaponData, attacker.assistData);
+            // calculate damage
+            aoeAtk = this.attackAfterBonuses(attacker);
+            aoeDmg = aoeAtk - this.mitAfterBonuses(attacker, defender);
+            // check for damage multiplier
+            aoeMod = attacker.specialData.hasOwnProperty("aoe_dmg_mod") || 1;
+            aoeDmg = roundNum(aoeDmg * attacker.specialData.aoe_dmg_mod, false);
+            // cap dmg at 0
+            aoeDmg = Math.max(aoeDmg, 0);
+            // Can't be lethal damage
+            defenderHP = Math.max(defenderHP - aoeDmg, 1);
+        }
 
         for (var i = 0; i < moveList.length; i++) {
             // Quit early if either character is dead
@@ -102,58 +127,59 @@ class BC2 {
             }
         }
 
+        // after combat effects
+        var atkAfterHeal = 0,
+            atkPoison = 0,
+            defPoison = 0,
+            atkRecoil = 0,
+            defRecoil = 0;
+
+        // check for after combat healing
+        if (attacker.weaponData.hasOwnProperty("initiate_heal") && attackerHP > 0) {
+            afterAtkHeal = attacker.weaponData.initiate_heal;
+            attackerHP = Math.max(attacker.stats.totalhp, attackerhP + afterAtkHeal);
+        }
+        // check for poison damage
+        if (attacker.passiveBData.hasOwnProperty("poison") && attackerHP > 0 && defenderHP > 0) {
+            atkPoison = attacker.passiveBData.poison;
+        }
+        if (attacker.weaponData.hasOwnProperty("poison") && defenderHP > 0) {
+            atkPoison = attacker.weaponData.poison;
+        }
+        if (attacker.weaponData.hasOwnProperty("initiate_poison") && defenderHP > 0) {
+            atkPoison = attacker.weaponData.initiate_poison;
+        }
+        if (defender.weaponData.hasOwnProperty("poison") && attackerHP > 0 && defAttacks) {
+            defPoison = defender.weaponData.poison;
+        }
+        // check for recoil damage
+        if (attackerHP > 0 && attacker.passiveAData.hasOwnProperty("recoil_dmg")) {
+            atkRecoil = attacker.passiveAData.recoil_dmg;
+        }
+        if (defenderHP > 0 && defender.passiveAData.hasOwnProperty("recoil_dmg")) {
+            defRecoil = defender.passiveAData.recoil_dmg;
+        }
+        // Nonlethal damage
+        var attackerHPAfterNonlethal = Math.max(1, attackerHP - defPoison - atkRecoil);
+        var defenderHPAfterNonlethal = Math.max(1, defenderHP - atkPoison - defRecoil);
+
         return {
             attackerHP: attackerHP,
             defenderHP: defenderHP,
+            attackerHPAfterNonlethal: attackerHPAfterNonlethal,
+            defenderHPAfterNonlethal: defenderHPAfterNonlethal,
             // The damge shown is the damage without taking specials into account
             attackerDmg: this.calculateAttackNoSpecial(attacker, defender),
             defenderDmg: this.calculateAttackNoSpecial(defender, attacker),
             attackerMult: _.sumBy(moveList, (x) => (x > 0) ? 1: 0),
             defenderMult: _.sumBy(moveList, (x) => (x < 0) ? 1: 0),
             attackerSpecCD: attackerSpecCD,
-            defenderSpecCD: defenderSpecCD
+            defenderSpecCD: defenderSpecCD,
+            // AoE damage to be applied to nearby units based on special
+            aoeAtk: aoeAtk,
+            aoeMod: aoeMod
         };
 
-    }
-
-    determineTurnOrder(attacker, defender) {
-        // Returns a list of attacks
-        // +1 represents attacker, -1 represents defender
-        // Therefore, a list like [1, 1, -1] means the attacker strikes twice, then the defender counters
-        var moveList = [];
-
-        // Attacker always attacks at least once
-        moveList.push(1);
-        if (this.canCounter(attacker, defender)) moveList.push(-1);
-
-        // Doubling based on higher speed
-        if (attacker.stats.speed >= defender.stats.speed + 5) {
-            moveList.push(1);
-        } else if (defender.stats.speed >= attacker.stats.speed + 5) {
-            if (this.canCounter(attacker, defender)) moveList.push(-1);
-        }
-
-        return moveList;
-    }
-
-    canCounter(attacker, defender) {
-        return defender.weaponName !== "None" && (
-                    defender.weaponData.range === attacker.weaponData.range ||
-                    defender.weaponData.hasOwnProperty("counter") ||
-                    defender.passiveAData.hasOwnProperty("counter")
-               ) &&
-               !attacker.weaponData.hasOwnProperty("prevent_counter") &&
-               !defender.weaponData.hasOwnProperty("prevent_counter") &&
-               !this.canActivateSweep(
-                    attacker.passiveBData,
-                    attacker.spd,
-                    defender.spd,
-                    defender.weaponData.type
-                );
-    }
-
-    canActivateSweep() {
-        return false;
     }
 
     calculateAttackNoSpecial(attacker, defender) {
@@ -161,7 +187,7 @@ class BC2 {
         var atk = this.attackAfterBonuses(attacker),
             effective = this.effectiveBonus(attacker, defender),
             advantage = this.advantageBonus(attacker, defender),
-            mit = (attacker.weaponData.magical) ? defender.stats.res : defender.stats.def,
+            mit = this.mitAfterBonuses(attacker, defender),
             classMod = (attacker.type === "Staff") ? 0.5 : 1;
 
         var afterEff = Math.trunc(atk * effective);
@@ -170,10 +196,10 @@ class BC2 {
     }
 
     calculateAttack(attacker, defender, attackerSpecCD, defenderSpecCD) {
-        var atk = attacker.stats.atk,
+        var atk = this.attackAfterBonuses(attacker),
             effective = this.effectiveBonus(attacker, defender),
             advantage = this.advantageBonus(attacker, defender),
-            mit = (attacker.weaponData.magical) ? defender.stats.res : defender.stats.def,
+            mit = this.mitAfterBonuses(attacker, defender),
             // Mitigation-modifying specials, e.g. luna
             mitMod = this.mitigationModifier(attacker, defender, attackerSpecCD),
             spcBoost = this.specialDmgBoost(attacker, attackerSpecCD),
@@ -181,7 +207,9 @@ class BC2 {
 
         var offMult = this.offensiveMultipler(attacker, defender, attackerSpecCD),
             defMult = this.defensiveMultipler(attacker, defender, defenderSpecCD);
-        console.log(atk, effective, advantage, mit, mitMod, spcBoost, classMod, offMult, defMult);
+
+        // console.log(atk, effective, advantage, mit, mitMod, spcBoost, classMod, offMult, defMult);
+
         // Damage from flat sources, like blade weapons or wo dao
         // MAKE SURE this is called last, so that we check if a special activated
         var flatDmg = this.damageBonus(attacker, defender);
@@ -190,7 +218,7 @@ class BC2 {
         var moddedMit = mit + Math.trunc(mit * mitMod);
         var dmg = afterEff + Math.trunc(afterEff * advantage) + Math.trunc(spcBoost) + flatDmg - moddedMit;
         var totalDmg = Math.trunc(dmg * classMod) * (1 + offMult);
-        console.log(flatDmg, afterEff, moddedMit, dmg, totalDmg);
+        // console.log(flatDmg, afterEff, moddedMit, dmg, totalDmg);
         return Math.max(0, Math.trunc(totalDmg) + Math.trunc(defMult * totalDmg));
     }
 
@@ -198,7 +226,16 @@ class BC2 {
     // HELPER FUNCTIONS
 
     attackAfterBonuses(attacker) {
-        return attacker.stats.atk;
+        return attacker.stats.atk + attacker.stats.bonusAtk;
+    }
+
+    mitAfterBonuses(attacker, defender) {
+        // Gets the defender's relevant mitigation amount, taking into account the attacker's damage type
+        if (attacker.weaponData.magical) {
+            return defender.stats.res + defender.stats.bonusRes;
+        } else {
+            return defender.stats.def + defender.stats.bonusDef;
+        }
     }
 
     effectiveBonus(attacker, defender) {
@@ -346,6 +383,23 @@ class BC2 {
         }
         return Math.max(cool, 0);
     }
+}
+
+// rounds numbers up or down, rounds to closest int if the difference is less than 0.01
+// unrounded is the number to round, roundUp is true if we need to round up
+function roundNum(unrounded, roundUp) {
+    "use strict";
+    if (roundUp) {
+        if (unrounded - Math.floor(unrounded) < 0.01) {
+            return Math.floor(unrounded);
+        } else {
+            return Math.ceil(unrounded);
+        }
+    } else if (Math.ceil(unrounded) - unrounded < 0.01) {
+        return Math.ceil(unrounded);
+    }
+
+    return Math.floor(unrounded);
 }
 
 export let BattleCalc = new BC2();

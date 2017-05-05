@@ -77,7 +77,12 @@ class Game extends Phaser.Game {
         $('#type').val(unit.type);
 
         updateSkillLists();
-        $('#weapon').val(unit.weapon);
+        $('#weapon').val(unit.weapon || '');
+        $('#assist').val(unit.assist || '');
+        $('#special').val(unit.special || '');
+        $('#a-skill').val(unit.passiveA || '');
+        $('#b-skill').val(unit.passiveB || '');
+        $('#c-skill').val(unit.passiveC || '');
     }
 
     getStats(char) {
@@ -127,38 +132,46 @@ class Game extends Phaser.Game {
         unit.specialData = specInfo[special] || {};
         unit.updateSpecCD(unit.specialData.cooldown);
     }
+
+    setSkill(char, skill, slot) {
+        console.log(skill, slot);
+        var unit = this.units[char];
+        unit['passive' + slot] = skill;
+        unit['passive' + slot + 'Data'] = skillInfo[slot.toLowerCase()][skill] || {};
+    }
 }
 
 var game = new Game();
 window.game = game;
+// window.skillInfo = skillInfo;
 
 $(document).ready(function() {
     $('#battle-preview').hide();
 
     $('#assist').empty();
-    $('#assist').append($("<option></option>").text('---'));
+    $('#assist').append($("<option></option>").text('---').attr('value', ''));
     _.keys(assistInfo).forEach((a) => {
         $('#assist').append($("<option></option>").attr('value', a).text(a));
     });
 
     $('#special').empty();
-    $('#special').append($("<option></option>").text('---'));
+    $('#special').append($("<option></option>").text('---').attr('value', ''));
     _.keys(specInfo).forEach((s) => {
         $('#special').append($("<option></option>").attr('value', s).text(s));
     });
 
     $('#a-skill').empty();
-    $('#a-skill').append($("<option></option>").text('---'));
+    $('#a-skill').append($("<option></option>").text('---').attr('value', ''));
     _.keys(skillInfo.a).forEach((s) => {
         $('#a-skill').append($("<option></option>").attr('value', s).text(s));
     });
     $('#b-skill').empty();
-    $('#b-skill').append($("<option></option>").text('---'));
+    $('#b-skill').append($("<option></option>").text('---').attr('value', ''));
     _.keys(skillInfo.b).forEach((s) => {
         $('#b-skill').append($("<option></option>").attr('value', s).text(s));
     });
     $('#c-skill').empty();
-    $('#c-skill').append($("<option></option>").text('---'));
+    $('#c-skill').append($("<option></option>").text('---').attr('value', ''));
     _.keys(skillInfo.c).forEach((s) => {
         $('#c-skill').append($("<option></option>").attr('value', s).text(s));
     });
@@ -221,6 +234,14 @@ $('#special').on('change', function() {
         char = $('#selected-character').val();
 
     game.setSpecial(char, special);
+});
+
+$('.passive-skill-form').on('change', function() {
+    var skill = $(this).val(),
+        char = $('#selected-character').val(),
+        slot = $(this).attr('data-slot');
+
+    game.setSkill(char, skill, slot);
 });
 
 $('.char-select').click(function() {
