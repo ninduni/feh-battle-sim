@@ -92,3 +92,19 @@ export function attackRangeLookup(weaponType) {
 			return 2;
 	}
 }
+
+// rounds numbers up or down, rounds to closest int if the difference is less than 0.01
+// unrounded is the number to round, roundUp is true if we need to round up
+export function roundNum(unrounded, roundUp) {
+    if (roundUp) {
+        if (unrounded - Math.floor(unrounded) < 0.01) {
+            return Math.floor(unrounded);
+        } else {
+            return Math.ceil(unrounded);
+        }
+    } else if (Math.ceil(unrounded) - unrounded < 0.01) {
+        return Math.ceil(unrounded);
+    }
+
+    return Math.floor(unrounded);
+}

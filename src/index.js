@@ -29,7 +29,12 @@ class Game extends Phaser.Game {
         $('#defender-hp-start').text(defender.stats.hp);
         $('#defender-hp-end').text(battleResult.defenderHP);
 
-        $('#attacker-dmg-strike').text(battleResult.attackerDmg);
+        // If attacker is going to do some pre-combat damage, show it too
+        let aoeDmgString = '';
+        if (battleResult.aoeDmgToTarget > 0) {
+            aoeDmgString = battleResult.aoeDmgToTarget + '+';
+        }
+        $('#attacker-dmg-strike').text(aoeDmgString + battleResult.attackerDmg);
         $('#defender-dmg-strike').text(battleResult.defenderDmg);
         // Only display multipliers if they're relevant
         if (battleResult.attackerMult > 1) $('#attacker-dmg-mult').text('x ' + battleResult.attackerMult);
@@ -136,7 +141,10 @@ class Game extends Phaser.Game {
     setSkill(char, skill, slot) {
         console.log(skill, slot);
         var unit = this.units[char];
+        console.log(unit.name);
         unit['passive' + slot] = skill;
+        console.log('passive' + slot);
+        console.log(skill);
         unit['passive' + slot + 'Data'] = skillInfo[slot.toLowerCase()][skill] || {};
     }
 }

@@ -940,79 +940,158 @@ export const skillInfo =
         },
         "Fortify Armor" : {
             "description" : "Grants adjacent armored allies Def/Res+6 through their next actions at the start of each turn.",
-            "move_unique" : "Armored"
+            "move_unique" : "Armored",
+            "hone" : {
+                "def" : 6,
+                "res" : 6
+            }
         },
         "Fortify Cavalry" : {
             "description" : "Grants adjacent cavalry allies Def/Res+6 through their next actions at the start of each turn.",
-            "move_unique" : "Cavalry"
+            "move_unique" : "Cavalry",
+            "hone" : {
+                "def" : 6,
+                "res": 6
+            }
         },
         "Fortify Def 1" : {
-            "description" : "Grants adjacent allies Def+2 through their next actions at the start of each turn."
+            "description" : "Grants adjacent allies Def+2 through their next actions at the start of each turn.",
+            "hone" : {
+                "def" : 2
+            }
         },
         "Fortify Def 2" : {
-            "description" : "Grants adjacent allies Def+3 through their next actions at the start of each turn."
+            "description" : "Grants adjacent allies Def+3 through their next actions at the start of each turn.",
+            "hone" : {
+                "def" : 3
+            }
         },
         "Fortify Def 3" : {
-            "description" : "Grants adjacent allies Def+4 through their next actions at the start of each turn."
+            "description" : "Grants adjacent allies Def+4 through their next actions at the start of each turn.",
+            "hone" : {
+                "def" : 4
+            }
         },
         "Fortify Dragons" : {
             "description" : "Grants adjacent dragon allies Def/Res+6 through their next actions at the start of each turn.",
-            "dragon_unique" : true
+            "dragon_unique" : true,
+            "hone" : {
+                "def" : 6,
+                "res" : 6
+            }
         },
         "Fortify Fliers" : {
             "description" : "Grants adjacent flying allies Def/Res+6 through their next actions at the start of each turn.",
-            "move_unique" : "Flying"
+            "move_unique" : "Flying",
+            "hone" : {
+                "def" : 6,
+                "res" : 6
+            }
         },
         "Fortify Res 1" : {
-            "description" : "Grants adjacent allies Res+2 through their next actions at the start of each turn."
+            "description" : "Grants adjacent allies Res+2 through their next actions at the start of each turn.",
+            "hone" : {
+                "res" : 2
+            }
         },
         "Fortify Res 2" : {
-            "description" : "Grants adjacent allies Res+3 through their next actions at the start of each turn."
+            "description" : "Grants adjacent allies Res+3 through their next actions at the start of each turn.",
+            "hone" : {
+                "res" : 3
+            }
         },
         "Fortify Res 3" : {
-            "description" : "Grants adjacent allies Res+4 through their next actions at the start of each turn."
+            "description" : "Grants adjacent allies Res+4 through their next actions at the start of each turn.",
+            "hone" : {
+                "res" : 4
+            }
         },
         "Goad Armor" : {
             "description" : "Grants armored allies within 2 spaces Atk/Spd+4 during combat.",
-            "move_unique" : "Armored"
+            "move_unique" : "Armored",
+            "spur" : {
+                "range" : 2,
+                "atk" : 4,
+                "spd" : 4
+            }
         },
         "Goad Cavalry" : {
             "description" : "Grants cavalry allies within 2 spaces Atk/Spd+4 during combat.",
-            "move_unique" : "Cavalry"
+            "move_unique" : "Cavalry",
+            "spur" : {
+                "range" : 2,
+                "atk" : 4,
+                "spd" : 4
+            }
         },
         "Goad Fliers" : {
             "description" : "Grants flying allies within 2 spaces Atk/Spd+4 during combat.",
-            "move_unique" : "Flying"
+            "move_unique" : "Flying",
+            "spur" : {
+                "range" : 2,
+                "atk" : 4,
+                "spd" : 4
+            }
         },
         "Hone Armor" : {
             "description" : "Grants adjacent armored allies Atk/Spd+6 through their next actions at the start of each turn.",
-            "move_unique" : "Armored"
+            "move_unique" : "Armored",
+            "hone" : {
+                "atk" : 6,
+                "spd" : 6
+            }
         },
         "Hone Atk 1" : {
-            "description" : "Grants adjacent allies Atk+2 through their next actions at the start of each turn."
+            "description" : "Grants adjacent allies Atk+2 through their next actions at the start of each turn.",
+            "hone" : {
+                "atk" : 2
+            }
         },
         "Hone Atk 2" : {
-            "description" : "Grants adjacent allies Atk+3 through their next actions at the start of each turn."
+            "description" : "Grants adjacent allies Atk+3 through their next actions at the start of each turn.",
+            "hone" : {
+                "atk" : 3
+            }
         },
         "Hone Atk 3" : {
-            "description" : "Grants adjacent allies Atk+4 through their next actions at the start of each turn."
+            "description" : "Grants adjacent allies Atk+4 through their next actions at the start of each turn.",
+            "hone" : {
+                "atk" : 4
+            }
         },
         "Hone Cavalry" : {
             "description" : "Grants adjacent cavalry allies Atk/Spd+6 through their next actions at the start of each turn.",
-            "move_unique" : "Cavalry"
+            "move_unique" : "Cavalry",
+            "hone" : {
+                "atk" : 6,
+                "spd" : 6
+            }
         },
         "Hone Fliers" : {
             "description" : "Grants adjacent flying allies Atk/Spd+6 through their next actions at the start of each turn.",
-            "move_unique" : "Flying"
+            "move_unique" : "Flying",
+            "hone" : {
+                "atk" : 6,
+                "spd" : 6
+            }
         },
         "Hone Spd 1" : {
-            "description" : "Grants adjacent allies Spd+2 through their next actions at the start of each turn."
+            "description" : "Grants adjacent allies Spd+2 through their next actions at the start of each turn.",
+            "hone" : {
+                "atk" : 2
+            }
         },
         "Hone Spd 2" : {
-            "description" : "Grants adjacent allies Spd+3 through their next actions at the start of each turn."
+            "description" : "Grants adjacent allies Spd+3 through their next actions at the start of each turn.",
+            "hone" : {
+                "atk" : 3
+            }
         },
         "Hone Spd 3" : {
-            "description" : "Grants adjacent allies Spd+4 through their next actions at the start of each turn."
+            "description" : "Grants adjacent allies Spd+4 through their next actions at the start of each turn.",
+            "hone" : {
+                "spd" : 4
+            }
         },
         "Savage Blow 1" : {
             "description" : "If unit initiates attack, foes within 2 spaces of target take 3 damage after combat."
@@ -1024,40 +1103,88 @@ export const skillInfo =
             "description" : "If unit initiates attack, foes within 2 spaces of target take 7 damage after combat."
         },
         "Spur Atk 1" : {
-            "description" : "Grants adjacent allies Atk+2 during combat."
+            "description" : "Grants adjacent allies Atk+2 during combat.",
+            "spur" : {
+                "range" : 1,
+                "atk" : 2
+            }
         },
         "Spur Atk 2" : {
-            "description" : "Grants adjacent allies Atk+3 during combat."
+            "description" : "Grants adjacent allies Atk+3 during combat.",
+            "spur" : {
+                "range" : 1,
+                "atk" : 3
+            }
         },
         "Spur Atk 3" : {
-            "description" : "Grants adjacent allies Atk+4 during combat."
+            "description" : "Grants adjacent allies Atk+4 during combat.",
+            "spur" : {
+                "range" : 1,
+                "atk" : 4
+            }
         },
         "Spur Def 1" : {
-            "description" : "Grants adjacent allies Def+2 during combat."
+            "description" : "Grants adjacent allies Def+2 during combat.",
+            "spur" : {
+                "range" : 1,
+                "def" : 2
+            }
         },
         "Spur Def 2" : {
-            "description" : "Grants adjacent allies Def+3 during combat."
+            "description" : "Grants adjacent allies Def+3 during combat.",
+            "spur" : {
+                "range" : 1,
+                "def" : 3
+            }
         },
         "Spur Def 3" : {
-            "description" : "Grants adjacent allies Def+4 during combat."
+            "description" : "Grants adjacent allies Def+4 during combat.",
+            "spur" : {
+                "range" : 1,
+                "def" : 4
+            }
         },
         "Spur Res 1" : {
-            "description" : "Grants adjacent allies Res+2 during combat."
+            "description" : "Grants adjacent allies Res+2 during combat.",
+            "spur" : {
+                "range" : 1,
+                "res" : 2
+            }
         },
         "Spur Res 2" : {
-            "description" : "Grants adjacent allies Res+3 during combat."
+            "description" : "Grants adjacent allies Res+3 during combat.",
+            "spur" : {
+                "range" : 1,
+                "res" : 3
+            }
         },
         "Spur Res 3" : {
-            "description" : "Grants adjacent allies Res+4 during combat."
+            "description" : "Grants adjacent allies Res+4 during combat.",
+            "spur" : {
+                "range" : 1,
+                "res" : 4
+            }
         },
         "Spur Spd 1" : {
-            "description" : "Grants adjacent allies Spd+2 during combat."
+            "description" : "Grants adjacent allies Spd+2 during combat.",
+            "spur" : {
+                "range" : 1,
+                "spd" : 2
+            }
         },
         "Spur Spd 2" : {
-            "description" : "Grants adjacent allies Spd+3 during combat."
+            "description" : "Grants adjacent allies Spd+3 during combat.",
+            "spur" : {
+                "range" : 1,
+                "spd" : 3
+            }
         },
         "Spur Spd 3" : {
-            "description" : "Grants adjacent allies Spd+4 during combat."
+            "description" : "Grants adjacent allies Spd+4 during combat.",
+            "spur" : {
+                "range" : 1,
+                "spd" : 4
+            }
         },
         "Threaten Atk 1" : {
             "description" : "Inflicts Atk-3 on foes within 2 spaces through their next actions at the start of each turn.",
@@ -1133,15 +1260,30 @@ export const skillInfo =
         },
         "Ward Armor" : {
             "description" : "Grants armored allies within 2 spaces Def/Res+4 during combat.",
-            "move_unique" : "Armored"
+            "move_unique" : "Armored",
+            "spur" : {
+                "range" : 2,
+                "def" : 4,
+                "res" : 4
+            }
         },
         "Ward Cavalry" : {
             "description" : "Grants cavalry allies within 2 spaces Def/Res+4 during combat.",
-            "move_unique" : "Cavalry"
+            "move_unique" : "Cavalry",
+            "spur" : {
+                "range" : 2,
+                "def" : 4,
+                "res" : 4
+            }
         },
         "Ward Fliers" : {
             "description" : "Grants flying allies within 2 spaces Def/Res+4 during combat.",
-            "move_unique" : "Flying"
+            "move_unique" : "Flying",
+            "spur" : {
+                "range" : 2,
+                "def" : 4,
+                "res" : 4
+            }
         }
     },
     "s" : {

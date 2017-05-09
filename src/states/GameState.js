@@ -53,6 +53,8 @@ class GameState extends Phaser.State {
         this.game.anna = anna;
         this.game.grid[6][1].unit = anna.id;
         this.game.units[anna.id] = anna;
+        this.game.setSpecial(anna.id, 'Rising Light');
+        anna.updateSpecCD(0);
         this.game.unitsGroup.add(anna);
         anna.stats = _.extend(anna.stats, { hp: 41, totalhp: 41, atk: 45, spd: 38, def: 22, res: 28 });
 
@@ -68,14 +70,14 @@ class GameState extends Phaser.State {
         this.game.unitsGroup.add(zach);
         zach.stats = _.extend(zach.stats, { hp: 35, totalhp:35, atk: 39, spd: 32, def: 19, res: 30 });
 
-        let draug = new Unit({game: this.game, gridX: 5, gridY: 2,
+        let draug = new Unit({game: this.game, gridX: 3, gridY: 4,
                              movementType: 'Armor',
                              weapon: 'Brave Sword',
                              asset: 'draug',
                              type: 'sword',
                              id: 5});
         this.game.draug = draug;
-        this.game.grid[2][5].unit = draug.id;
+        this.game.grid[4][3].unit = draug.id;
         this.game.units[draug.id] = draug;
         this.game.unitsGroup.add(draug);
         draug.stats = _.extend(draug.stats, { hp: 50, totalhp: 50, atk: 38, spd: 27, def: 39, res: 18 });

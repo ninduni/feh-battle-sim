@@ -26,28 +26,36 @@ export const specInfo =
     "Blazing Flame" : {
         "description" : "Before initiating combat, foes in an area near target take damage equal to 1.5 × (unit's Atk minus foe's Def or Res).",
         "cooldown" : 5,
-        "before_combat_aoe" : true,
+        "before_combat_aoe" : {
+            "pattern" : [[-2, 0], [-1, 0], [1, 0], [2, 0]]
+        },
         "aoe_dmg_mod" : 1.5,
         "weapon_restrict" : "Staff"
     },
     "Blazing Light" : {
         "description" : "Before initiating combat, foes in an area near target take damage equal to 1.5 × (unit's Atk minus foe's Def or Res).",
         "cooldown" : 5,
-        "before_combat_aoe" : true,
+        "before_combat_aoe" : {
+            "pattern": [[-1, -1], [1, -1], [-1, 1], [1, 1]]
+        },
         "aoe_dmg_mod" : 1.5,
         "weapon_restrict" : "Staff"
     },
     "Blazing Thunder" : {
         "description" : "Before initiating combat, foes in an area near target take damage equal to 1.5 × (unit's Atk minus foe's Def or Res).",
         "cooldown" : 5,
-        "before_combat_aoe" : true,
+        "before_combat_aoe" : {
+            "pattern": [[0, -2], [0, -1], [0, 1], [0, 2]]
+        },
         "aoe_dmg_mod" : 1.5,
         "weapon_restrict" : "Staff"
     },
     "Blazing Wind" : {
         "description" : "Before initiating combat, foes in an area near target take damage equal to 1.5 × (unit's Atk minus foe's Def or Res).",
         "cooldown" : 5,
-        "before_combat_aoe" : true,
+        "before_combat_aoe" : {
+            "pattern": [[-1, 0], [0, -1], [1, 0], [0, 1]]
+        },
         "aoe_dmg_mod" : 1.5,
         "weapon_restrict" : "Staff"
     },
@@ -152,25 +160,33 @@ export const specInfo =
     "Growing Flame" : {
         "description" : "Before initiating combat, foes in a wide area near target take damage equal to unit's Atk minus foe's Def or Res.",
         "cooldown" : 5,
-        "before_combat_aoe" : true,
+        "before_combat_aoe" : {
+            "pattern": [[-2, 0], [-1, 0], [-1, -1], [-1, 1], [1, 0], [1, -1], [1, 1], [2, 0]]
+        },
         "weapon_restrict" : "Staff"
     },
     "Growing Light" : {
         "description" : "Before initiating combat, foes in a wide area near target take damage equal to unit's Atk minus foe's Def or Res.",
         "cooldown" : 5,
-        "before_combat_aoe" : true,
+        "before_combat_aoe" : {
+            "pattern": [[-2, 0], [-1, -1], [0, -2], [1, -1], [2, 0], [1, 1], [0, 2], [-1, 1]]
+        },
         "weapon_restrict" : "Staff"
     },
 	"Growing Thunder" : {
 	    "description" : "Before initiating combat, foes in a wide area near target take damage equal to unit's Atk minus foe's Def or Res.",
         "cooldown" : 5,
-        "before_combat_aoe" : true,
+        "before_combat_aoe" : {
+            "pattern": [[0, -2], [0, -1], [-1, 0], [1, 0], [0, 1], [0, 2]]
+        },
         "weapon_restrict" : "Staff"
     },
     "Growing Wind" : {
         "description" : "Before initiating combat, foes in a wide area near target take damage equal to unit's Atk minus foe's Def or Res.",
         "cooldown" : 5,
-        "before_combat_aoe" : true,
+        "before_combat_aoe" : {
+            "pattern": [[-1, 0], [-1, -1], [0, -1], [1, 1], [1, 0], [1, 1], [0, 1], [-1, 1]]
+        },
         "weapon_restrict" : "Staff"
     },
     "Heavenly Light" : {
@@ -274,25 +290,33 @@ export const specInfo =
     "Rising Flame" : {
         "description" : "Before initiating combat, foes in an area near target take damage equal to unit's Atk minus foe's Def or Res.",
         "cooldown" : 5,
-        "before_combat_aoe" : true,
+        "before_combat_aoe" : {
+            "pattern" : [[-2, 0], [-1, 0], [1, 0], [2, 0]]
+        },
         "weapon_restrict" : "Staff"
     },
     "Rising Light" : {
         "description" : "Before initiating combat, foes in an area near target take damage equal to unit's Atk minus foe's Def or Res.",
         "cooldown" : 5,
-        "before_combat_aoe" : true,
+        "before_combat_aoe" : {
+            "pattern": [[-1, -1], [1, -1], [-1, 1], [1, 1]]
+        },
         "weapon_restrict" : "Staff"
     },
     "Rising Thunder" : {
         "description" : "Before initiating combat, foes in an area near target take damage equal to unit's Atk minus foe's Def or Res.",
         "cooldown" : 5,
-        "before_combat_aoe" : true,
+        "before_combat_aoe" : {
+            "pattern": [[0, -2], [0, -1], [0, 1], [0, 2]]
+        },
         "weapon_restrict" : "Staff"
     },
     "Rising Wind" : {
         "description" : "Before initiating combat, foes in an area near target take damage equal to unit's Atk minus foe's Def or Res.",
         "cooldown" : 5,
-        "before_combat_aoe" : true,
+        "before_combat_aoe" : {
+            "pattern": [[-1, 0], [0, -1], [1, 0], [0, 1]]
+        },
         "weapon_restrict" : "Staff"
     },
     "Sacred Cowl" : {

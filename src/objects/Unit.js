@@ -1,5 +1,6 @@
 import * as utils from 'helpers/utils';
 import { BattleCalc } from 'helpers/BC2';
+import * as NearbyUnitHelper from 'helpers/NearbyUnitHelper';
 // import { BattleCalc } from 'helpers/BattleCalculator';
 import { assistInfo } from 'skills/assist';
 import { weaponInfo } from 'skills/weapon';
@@ -145,7 +146,6 @@ export default class Unit extends Phaser.Sprite {
                 if (attackPos !== null) {
                     var target = this.game.units[hoverUnit];
 
-                    BattleCalc.prepare(this, target);
                     var battleResult = BattleCalc.dryRun(this, target);
 
                     this.game.grid[toGrid(this.y)][toGrid(this.x)].showAttack();
@@ -249,8 +249,19 @@ export default class Unit extends Phaser.Sprite {
     }
 
     attack(target) {
-        BattleCalc.prepare(this, target);
-        BattleCalc.run(this, target);
+        let battleResult = BattleCalc.run(this, target);
+        // Deal nonlethal pre-combat damage to nearby units
+        if (this.specialData.hasOwnProperty("before_combat_aoe") && battleResult.aoeAtk > 0) {
+            NearbyUnitHelper.damageNearbyUnits({
+                game: this.game,
+                attacker: this,
+                defender: target,
+                aoeAtk: battleResult.aoeAtk,
+                aoeMod: battleResult.aoeMod,
+                magical: this.weaponData.magical,
+                pattern: this.specialData.before_combat_aoe.pattern
+            });
+        }
     }
 
     doAssist(target, assistPos) {
@@ -553,7 +564,7 @@ export default class Unit extends Phaser.Sprite {
 
     getValidAssists(validMoves, validEndPositons) {
         // Assists only show up if we have an assist skill equipped
-        if (this.assist == null) {
+        if (this.assist === null) {
             return [];
         }
 

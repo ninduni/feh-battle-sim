@@ -1,18 +1,16 @@
 import { TurnOrderCalc } from 'helpers/TurnOrder';
+import * as utils from 'helpers/utils';
 
 class BC2 {
-    prepare() {
-
-    }
-
     run(attacker, defender) {
         var result = this.dryRun(attacker, defender);
-        console.log(result);
+
         // Set new HPs
         attacker.stats.hp = result.attackerHPAfterNonlethal;
         defender.stats.hp = result.defenderHPAfterNonlethal;
         attacker.updateSpecCD(result.attackerSpecCD);
         defender.updateSpecCD(result.defenderSpecCD);
+        return result;
     }
 
     dryRun(attacker, defender) {
@@ -28,8 +26,6 @@ class BC2 {
             aoeMod = 0;
 
         var moveList = TurnOrderCalc.determineTurnOrder(attacker, defender);
-        console.log(moveList);
-        // var moveList = this.determineTurnOrder(attacker, defender);
 
         // Mutable things: store special cooldowns and health
         var attackerSpecCD = attacker.specCurrCooldown,
@@ -46,13 +42,13 @@ class BC2 {
         // AOE damage before combat
         if (attacker.specialData.hasOwnProperty("before_combat_aoe") && attackerSpecCD <= 0) {
             // reset cooldown
-            attacker.specCurrCooldown = this.getSpecialCooldown(attacker.specialData, attacker.weaponData, attacker.assistData);
+            attackerSpecCD = this.getSpecialCooldown(attacker.specialData, attacker.weaponData, attacker.assistData);
             // calculate damage
             aoeAtk = this.attackAfterBonuses(attacker);
             aoeDmg = aoeAtk - this.mitAfterBonuses(attacker, defender);
             // check for damage multiplier
             aoeMod = attacker.specialData.hasOwnProperty("aoe_dmg_mod") || 1;
-            aoeDmg = roundNum(aoeDmg * attacker.specialData.aoe_dmg_mod, false);
+            aoeDmg = utils.roundNum(aoeDmg * aoeMod, false);
             // cap dmg at 0
             aoeDmg = Math.max(aoeDmg, 0);
             // Can't be lethal damage
@@ -159,9 +155,16 @@ class BC2 {
         if (defenderHP > 0 && defender.passiveAData.hasOwnProperty("recoil_dmg")) {
             defRecoil = defender.passiveAData.recoil_dmg;
         }
-        // Nonlethal damage
-        var attackerHPAfterNonlethal = Math.max(1, attackerHP - defPoison - atkRecoil);
-        var defenderHPAfterNonlethal = Math.max(1, defenderHP - atkPoison - defRecoil);
+        // Nonlethal damage if either target is not already dead
+        let attackerHPAfterNonlethal = attackerHP;
+        let defenderHPAfterNonlethal = defenderHP;
+        if (attackerHP > 0) {
+            attackerHPAfterNonlethal = Math.max(1, attackerHP - defPoison - atkRecoil);
+        }
+        if (defenderHP > 0) {
+            console.log(atkPoison);
+            defenderHPAfterNonlethal = Math.max(1, defenderHP - atkPoison - defRecoil);
+        }
 
         return {
             attackerHP: attackerHP,
@@ -177,7 +180,8 @@ class BC2 {
             defenderSpecCD: defenderSpecCD,
             // AoE damage to be applied to nearby units based on special
             aoeAtk: aoeAtk,
-            aoeMod: aoeMod
+            aoeMod: aoeMod,
+            aoeDmgToTarget: aoeDmg
         };
 
     }
@@ -383,23 +387,6 @@ class BC2 {
         }
         return Math.max(cool, 0);
     }
-}
-
-// rounds numbers up or down, rounds to closest int if the difference is less than 0.01
-// unrounded is the number to round, roundUp is true if we need to round up
-function roundNum(unrounded, roundUp) {
-    "use strict";
-    if (roundUp) {
-        if (unrounded - Math.floor(unrounded) < 0.01) {
-            return Math.floor(unrounded);
-        } else {
-            return Math.ceil(unrounded);
-        }
-    } else if (Math.ceil(unrounded) - unrounded < 0.01) {
-        return Math.ceil(unrounded);
-    }
-
-    return Math.floor(unrounded);
 }
 
 export let BattleCalc = new BC2();
