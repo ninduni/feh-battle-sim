@@ -930,13 +930,16 @@ export const skillInfo =
             "weapon_unique" : "Bow"
         },
         "Breath of Life 1" : {
-            "description" : "If unit initiates attack, adjacent allies recover 3 HP after combat."
+            "description" : "If unit initiates attack, adjacent allies recover 3 HP after combat.",
+            "after_combat_aoe_heal" : 3
         },
         "Breath of Life 2" : {
-            "description" : "If unit initiates attack, adjacent allies recover 5 HP after combat."
+            "description" : "If unit initiates attack, adjacent allies recover 5 HP after combat.",
+            "after_combat_aoe_heal" : 5
         },
         "Breath of Life 3" : {
-            "description" : "If unit initiates attack, adjacent allies recover 7 HP after combat."
+            "description" : "If unit initiates attack, adjacent allies recover 7 HP after combat.",
+            "after_combat_aoe_heal" : 7
         },
         "Fortify Armor" : {
             "description" : "Grants adjacent armored allies Def/Res+6 through their next actions at the start of each turn.",
@@ -1094,13 +1097,16 @@ export const skillInfo =
             }
         },
         "Savage Blow 1" : {
-            "description" : "If unit initiates attack, foes within 2 spaces of target take 3 damage after combat."
+            "description" : "If unit initiates attack, foes within 2 spaces of target take 3 damage after combat.",
+            "after_combat_aoe" : 3
         },
         "Savage Blow 2" : {
-            "description" : "If unit initiates attack, foes within 2 spaces of target take 5 damage after combat."
+            "description" : "If unit initiates attack, foes within 2 spaces of target take 5 damage after combat.",
+            "after_combat_aoe" : 5
         },
         "Savage Blow 3" : {
-            "description" : "If unit initiates attack, foes within 2 spaces of target take 7 damage after combat."
+            "description" : "If unit initiates attack, foes within 2 spaces of target take 7 damage after combat.",
+            "after_combat_aoe" : 7
         },
         "Spur Atk 1" : {
             "description" : "Grants adjacent allies Atk+2 during combat.",
@@ -1189,73 +1195,73 @@ export const skillInfo =
         "Threaten Atk 1" : {
             "description" : "Inflicts Atk-3 on foes within 2 spaces through their next actions at the start of each turn.",
             "threaten" : {
-                "atk" : -3
+                "atk" : 3
             }
         },
         "Threaten Atk 2" : {
             "description" : "Inflicts Atk-4 on foes within 2 spaces through their next actions at the start of each turn.",
             "threaten" : {
-                "atk" : -4
+                "atk" : 4
             }
         },
         "Threaten Atk 3" : {
             "description" : "Inflicts Atk-5 on foes within 2 spaces through their next actions at the start of each turn.",
             "threaten" : {
-                "atk" : -5
+                "atk" : 5
             }
         },
         "Threaten Def 1" : {
             "description" : "Inflicts Def-3 on foes within 2 spaces through their next actions at the start of each turn.",
             "threaten" : {
-                "def" : -3
+                "def" : 3
             }
         },
         "Threaten Def 2" : {
             "description" : "Inflicts Def-4 on foes within 2 spaces through their next actions at the start of each turn.",
             "threaten" : {
-                "def" : -4
+                "def" : 4
             }
         },
         "Threaten Def 3" : {
             "description" : "Inflicts Def-5 on foes within 2 spaces through their next actions at the start of each turn.",
             "threaten" : {
-                "def" : -5
+                "def" : 5
             }
         },
         "Threaten Res 1" : {
             "description" : "Inflicts Res-3 on foes within 2 spaces through their next actions at the start of each turn.",
             "threaten" : {
-                "res" : -3
+                "res" : 3
             }
         },
         "Threaten Res 2" : {
             "description" : "Inflicts Res-4 on foes within 2 spaces through their next actions at the start of each turn.",
             "threaten" : {
-                "res" : -4
+                "res" : 4
             }
         },
         "Threaten Res 3" : {
             "description" : "Inflicts Res-5 on foes within 2 spaces through their next actions at the start of each turn.",
             "threaten" : {
-                "res" : -5
+                "res" : 5
             }
         },
         "Threaten Spd 1" : {
             "description" : "Inflicts Spd-3 on foes within 2 spaces through their next actions at the start of each turn.",
             "threaten" : {
-                "spd" : -3
+                "spd" : 3
             }
         },
         "Threaten Spd 2" : {
             "description" : "Inflicts Spd-4 on foes within 2 spaces through their next actions at the start of each turn.",
             "threaten" : {
-                "res" : -4
+                "spd" : 4
             }
         },
         "Threaten Spd 3" : {
             "description" : "Inflicts Spd-5 on foes within 2 spaces through their next actions at the start of each turn.",
             "threaten" : {
-                "res" : -5
+                "spd" : 5
             }
         },
         "Ward Armor" : {

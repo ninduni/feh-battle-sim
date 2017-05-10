@@ -54,7 +54,7 @@ class GameState extends Phaser.State {
         this.game.grid[6][1].unit = anna.id;
         this.game.units[anna.id] = anna;
         this.game.setSpecial(anna.id, 'Rising Light');
-        anna.updateSpecCD(0);
+        // anna.updateSpecCD(0);
         this.game.unitsGroup.add(anna);
         anna.stats = _.extend(anna.stats, { hp: 41, totalhp: 41, atk: 45, spd: 38, def: 22, res: 28 });
 

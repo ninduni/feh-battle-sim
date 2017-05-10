@@ -39,6 +39,10 @@ class BC2 {
         this.atkSpec = false;
         this.defSpec = false;
 
+        // Apply initiated combat/defending bonuses to both combatants
+        this.applyInitiateBonus(attacker);
+        this.applyDefendBonus(defender);
+
         // AOE damage before combat
         if (attacker.specialData.hasOwnProperty("before_combat_aoe") && attackerSpecCD <= 0) {
             // reset cooldown
@@ -162,7 +166,7 @@ class BC2 {
             attackerHPAfterNonlethal = Math.max(1, attackerHP - defPoison - atkRecoil);
         }
         if (defenderHP > 0) {
-            console.log(atkPoison);
+            // console.log(atkPoison);
             defenderHPAfterNonlethal = Math.max(1, defenderHP - atkPoison - defRecoil);
         }
 
@@ -230,15 +234,36 @@ class BC2 {
     // HELPER FUNCTIONS
 
     attackAfterBonuses(attacker) {
-        return attacker.stats.atk + attacker.stats.bonusAtk;
+        return attacker.stats.atk + attacker.stats.honeAtk + attacker.stats.spurAtk - attacker.stats.threatenAtk;
     }
 
     mitAfterBonuses(attacker, defender) {
         // Gets the defender's relevant mitigation amount, taking into account the attacker's damage type
         if (attacker.weaponData.magical) {
-            return defender.stats.res + defender.stats.bonusRes;
+            return defender.stats.res + defender.stats.honeRes + defender.stats.spurRes - defender.stats.threatenRes;
         } else {
-            return defender.stats.def + defender.stats.bonusDef;
+            return defender.stats.def + defender.stats.honeDef + defender.stats.spurDef - defender.stats.threatenDef;
+        }
+    }
+
+    applyInitiateBonus(attacker) {
+        if (attacker.weaponData.hasOwnProperty("initiate_mod")) {
+            this.applySpurBonuses(attacker, attacker.weaponData.initiate_mod);
+        }
+        if (attacker.passiveAData.hasOwnProperty("initiate_mod")) {
+            this.applySpurBonuses(attacker, attacker.passiveAData.initiate_mod);
+        }
+    }
+
+    applyDefendBonus(defender) {
+        if (defender.weaponData.hasOwnProperty("defend_mod")) {
+            this.applySpurBonuses(defender, defender.weaponData.defend_mod);
+        }
+    }
+
+    applySpurBonuses(unit, statMods) {
+       for (var stat in statMods) {
+            unit.stats[_.camelCase('spur-' + stat)] += statMods[stat];
         }
     }
 

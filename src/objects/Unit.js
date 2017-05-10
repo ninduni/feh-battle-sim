@@ -33,12 +33,21 @@ export default class Unit extends Phaser.Sprite {
             spd: 0,
             def: 0,
             res: 0,
-
-            bonusHP: 0, // Never used, but could be!
-            bonusAtk: 0,
-            bonusSpd: 0,
-            bonusDef: 0,
-            bonusRes: 0,
+            // Tracks "hone" or visible bonuses, only one of which can be active at a time
+            honeAtk: 0,
+            honeSpd: 0,
+            honeDef: 0,
+            honeRes: 0,
+            // Tracks penalties from threaten
+            threatenAtk: 0,
+            threatenSpd: 0,
+            threatenDef: 0,
+            threatenRes: 0,
+            // Tracks in-combat bonuses (spur, initiate/defend bonuses)
+            spurAtk: 0,
+            spurSpd: 0,
+            spurDef: 0,
+            spurRes: 0
         };
         this.stats.totalhp = this.stats.hp;
 
@@ -146,7 +155,7 @@ export default class Unit extends Phaser.Sprite {
                 if (attackPos !== null) {
                     var target = this.game.units[hoverUnit];
 
-                    var battleResult = BattleCalc.dryRun(this, target);
+                    var battleResult = this.dryRunAttack(target, fromGrid(attackPos.x), fromGrid(attackPos.y));
 
                     this.game.grid[toGrid(this.y)][toGrid(this.x)].showAttack();
                     this.game.grid[attackPos.y][attackPos.x].showMove();
@@ -173,6 +182,29 @@ export default class Unit extends Phaser.Sprite {
 
     startTurn() {
         this.setTurnStart();
+
+        // Calculate hone buffs
+        NearbyUnitHelper.getNearbyHoneBuffs(this.game, this);
+
+        // Calculate "defiant" buffs
+        var stat, statName;
+        if (this.weaponData.hasOwnProperty("defiant") && this.stats.hp <= utils.roundNum(this.stats.totalhp / 2)) {
+            for (stat in this.weaponData.defiant) {
+                statName = _.camelCase('hone-' + stat);
+                this.stats[statName] = Math.max(this.stats[statName], this.weaponData.defiant[stat]);
+            }
+        }
+        if (this.passiveAData.hasOwnProperty("defiant") && this.stats.hp <= utils.roundNum(this.stats.totalhp / 2)) {
+            for (stat in this.passiveAData.defiant) {
+                statName = _.camelCase('hone-' + stat);
+                this.stats[statName] = Math.max(this.stats[statName], this.passiveAData.defiant[stat]);
+            }
+        }
+
+        // Threaten nearby units
+        if (this.passiveCData.hasOwnProperty("threaten")) {
+            NearbyUnitHelper.applyNearbyThreatenPenalties(this.game, this, this.passiveCData.threaten);
+        }
     }
 
     setTurnStart() {
@@ -248,7 +280,20 @@ export default class Unit extends Phaser.Sprite {
         this.y = toGrid(this.y) * 90 + 45;
     }
 
-    attack(target) {
+    dryRunAttack(target, newX, newY) {
+        // Calculate spur buffs on this unit and the target
+        NearbyUnitHelper.getNearbySpurBuffs(this.game, this, newX, newY);
+        NearbyUnitHelper.getNearbySpurBuffs(this.game, target);
+
+        var battleResult = BattleCalc.dryRun(this, target);
+        return battleResult;
+    }
+
+    attack(target, newX, newY) {
+        // Calculate spur buffs on this unit and the target
+        NearbyUnitHelper.getNearbySpurBuffs(this.game, this, newX, newY);
+        NearbyUnitHelper.getNearbySpurBuffs(this.game, target);
+
         let battleResult = BattleCalc.run(this, target);
         // Deal nonlethal pre-combat damage to nearby units
         if (this.specialData.hasOwnProperty("before_combat_aoe") && battleResult.aoeAtk > 0) {
@@ -260,6 +305,25 @@ export default class Unit extends Phaser.Sprite {
                 aoeMod: battleResult.aoeMod,
                 magical: this.weaponData.magical,
                 pattern: this.specialData.before_combat_aoe.pattern
+            });
+        }
+        // Deal nonlethal post-combat damage to nearby units
+        if (this.passiveCData.hasOwnProperty("after_combat_aoe")) {
+            NearbyUnitHelper.flatDamageNearbyUnits({
+                game: this.game,
+                attacker: this,
+                target: target,
+                range: 2,
+                dmg: this.passiveCData.after_combat_aoe
+            });
+        }
+        // Heal nearby units after combat
+        if (this.passiveCData.hasOwnProperty("after_combat_aoe_heal")) {
+            NearbyUnitHelper.healNearbyUnits({
+                game: this.game,
+                healer: {id: this.id, x: newX, y: newY},
+                range: 1,
+                healAmt: this.passiveCData.after_combat_aoe_heal
             });
         }
     }
@@ -343,7 +407,7 @@ export default class Unit extends Phaser.Sprite {
             console.log('attacking!');
             target = this.game.grid[toGrid(this.y)][toGrid(this.x)].unit;
             console.log(this.name + ' is attacking ' + this.game.units[target].name);
-            this.attack(this.game.units[target]);
+            this.attack(this.game.units[target], fromGrid(attackPos.x), fromGrid(attackPos.y));
 
             this.x = fromGrid(attackPos.x);
             this.y = fromGrid(attackPos.y);

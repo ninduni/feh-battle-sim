@@ -74,10 +74,23 @@ class Game extends Phaser.Game {
         $('#def').val(stats.def);
         $('#res').val(stats.res);
 
-        $('#bonus-atk').text((stats.bonusAtk) ? '+' + stats.bonusAtk : '');
-        $('#bonus-spd').text((stats.bonusSpd) ? '+' + stats.bonusSpd : '');
-        $('#bonus-def').text((stats.bonusDef) ? '+' + stats.bonusDef : '');
-        $('#bonus-res').text((stats.bonusRes) ? '+' + stats.bonusRes : '');
+        var buffs = {
+            atk: stats.honeAtk - stats.threatenAtk,
+            spd: stats.honeSpd - stats.threatenSpd,
+            def: stats.honeDef - stats.threatenDef,
+            res: stats.honeRes - stats.threatenRes
+        };
+        for (var stat in buffs) {
+            if (buffs[stat] > 0) {
+                $('#hone-' + stat).addClass('buff').removeClass('penalty');
+                $('#hone-' + stat).text('+' + buffs[stat]);
+            } else if (buffs[stat] < 0) {
+                $('#hone-' + stat).addClass('penalty').removeClass('buff');
+                $('#hone-' + stat).text(buffs[stat]);
+            } else {
+                $('#hone-' + stat).text('');
+            }
+        }
 
         $('#type').val(unit.type);
 
@@ -139,12 +152,8 @@ class Game extends Phaser.Game {
     }
 
     setSkill(char, skill, slot) {
-        console.log(skill, slot);
         var unit = this.units[char];
-        console.log(unit.name);
         unit['passive' + slot] = skill;
-        console.log('passive' + slot);
-        console.log(skill);
         unit['passive' + slot + 'Data'] = skillInfo[slot.toLowerCase()][skill] || {};
     }
 }

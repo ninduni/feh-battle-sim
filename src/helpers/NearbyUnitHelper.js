@@ -32,15 +32,56 @@ export function damageNearbyUnits({game, attacker, defender, aoeAtk, aoeMod, mag
     });
 }
 
-export function getNearbyHoneBuffs({game, receiver}) {
+export function flatDamageNearbyUnits({game, attacker, target, range, dmg}) {
+    // Get a list of units to damage based off the pattern provided
+    let unitList = [];
+    let pairs = utils.pairsWithinNSpaces(toGrid(target.x), toGrid(target.y), game.maxGridX, game.maxGridY, range);
+    pairs.forEach(({x: x, y: y}) => {
+        let unitID = game.grid[y][x].unit;
+        if (unitID !== 0) {
+            let unit = game.units[unitID];
+            if (unit.isOpposingTeam(attacker.id)) {
+                unitList.push(unit);
+            }
+        }
+    });
+
+    // Deal nonlethal damage to each unit
+    unitList.forEach((unit) => {
+        unit.stats.hp = Math.max(unit.stats.hp - dmg, 1);
+    });
+}
+
+export function healNearbyUnits({game, healer, range, healAmt}) {
+    // Get a list of units to damage based off the pattern provided
+    let unitList = [];
+    let pairs = utils.pairsWithinNSpaces(toGrid(healer.x), toGrid(healer.y), game.maxGridX, game.maxGridY, range);
+    pairs.forEach(({x: x, y: y}) => {
+        let unitID = game.grid[y][x].unit;
+        if (unitID === 0 || unitID === healer.id) return;
+
+        let unit = game.units[unitID];
+        if (unit.isOpposingTeam(healer.id)) return;
+
+        unitList.push(unit);
+    });
+
+    // Deal nonlethal damage to each unit
+    unitList.forEach((unit) => {
+        unit.stats.hp = Math.min(unit.stats.hp + healAmt, unit.stats.totalhp);
+    });
+}
+
+export function getNearbyHoneBuffs(game, receiver) {
     // Boosts a unit's bonus stats by all nearby hone buffs
     // Iterate through all friendly units, see if this unit is in range of one of their hone buffs
     let honeAtk = 0,
         honeSpd = 0,
         honeDef = 0,
         honeRes = 0;
-    game.units.forEach((unit) => {
+    _.values(game.units).forEach((unit) => {
         if (unit.isOpposingTeam(receiver.id)) return;
+        if (unit.id === receiver.id) return;
         if (!unit.passiveCData.hasOwnProperty("hone")) return;
         // Break if we don't pass filters
         if ((unit.passiveCData.hasOwnProperty("move_unique") && receiver.movement_type !== unit.passiveCData.move_unique) ||
@@ -67,23 +108,73 @@ export function getNearbyHoneBuffs({game, receiver}) {
         }
     });
 
-    return {
-        honeAtk: honeAtk,
-        honeSpd: honeSpd,
-        honeDef: honeDef,
-        honeRes: honeRes
-    };
+    receiver.stats.honeAtk = honeAtk;
+    receiver.stats.honeSpd = honeSpd;
+    receiver.stats.honeDef = honeDef;
+    receiver.stats.honeRes = honeRes;
 }
 
-export function getNearbySpurBuffs({game, receiver}) {
+export function applyNearbyThreatenPenalties(game, threatener) {
+    // Debuffs all enemy units based on the threatener's skills
+    // Note that this has to work opposite for hone buffs,
+    //  in that we iterate through all opposing enemies and modify THEIR threaten stat,
+    //  because it applies TO enemies at the start of a unit's turn
+
+    // Threaten notes:
+    // Wears off at start of turn (guaranteed) or when attacking/performing and action
+    _.values(game.units).forEach((unit) => {
+        if (!unit.isOpposingTeam(threatener.id)) return;
+        if (unit.id === threatener.id) return;
+        if (!threatener.passiveCData.hasOwnProperty("threaten")) return;
+
+        // Break if the receiver is too far from the buff giver
+        if (distance(unit, threatener) > 2) return;
+
+        let threatenAtk = unit.stats.threatenAtk,
+            threatenSpd = unit.stats.threatenSpd,
+            threatenDef = unit.stats.threatenDef,
+            threatenRes = unit.stats.threatenRes;
+
+        // For each stat, only keep the largest threaten ability
+        if (threatener.passiveCData.threaten.hasOwnProperty("atk")) {
+            threatenAtk = Math.max(threatenAtk, threatener.passiveCData.threaten.atk);
+        }
+        if (threatener.passiveCData.threaten.hasOwnProperty("spd")) {
+            threatenSpd = Math.max(threatenSpd, threatener.passiveCData.threaten.spd);
+        }
+        if (threatener.passiveCData.threaten.hasOwnProperty("def")) {
+            threatenDef = Math.max(threatenDef, threatener.passiveCData.threaten.def);
+        }
+        if (threatener.passiveCData.threaten.hasOwnProperty("res")) {
+            threatenRes = Math.max(threatenRes, threatener.passiveCData.threaten.res);
+        }
+
+        unit.stats.threatenAtk = threatenAtk;
+        unit.stats.threatenSpd = threatenSpd;
+        unit.stats.threatenDef = threatenDef;
+        unit.stats.threatenRes = threatenRes;
+    });
+}
+
+export function getNearbySpurBuffs(game, receiver, receiverX=null, receiverY=null) {
     // Boosts a unit's bonus stats by all nearby spur buffs
     // Iterate through all friendly units, see if this unit is in range of one of their spur buffs
+
+    // If no unit X/Y is provided just use the unit's current position
+    var receiverPos;
+    if (receiverX === null && receiverY === null) {
+        receiverPos = {x: receiver.x, y: receiver.y};
+    } else {
+        receiverPos = {x: receiverX, y: receiverY};
+    }
+
     let spurAtk = 0,
         spurSpd = 0,
         spurDef = 0,
         spurRes = 0;
-    game.units.forEach((unit) => {
+    _.values(game.units).forEach((unit) => {
         if (unit.isOpposingTeam(receiver.id)) return;
+        if (unit.id === receiver.id) return;
         if (!unit.passiveCData.hasOwnProperty("spur")) return;
         // Break if we don't pass filters
         if ((unit.passiveCData.hasOwnProperty("move_unique") && receiver.movement_type !== unit.passiveCData.move_unique) ||
@@ -93,7 +184,7 @@ export function getNearbySpurBuffs({game, receiver}) {
             return;
         }
         // Break if the receiver is too far from the buff giver
-        if (distance(unit, receiver) > unit.passiveCData.spur.range) return;
+        if (distance(unit, receiverPos) > unit.passiveCData.spur.range) return;
 
         // For each stat, sum all spur buffs
         if (unit.passiveCData.spur.hasOwnProperty("atk")) {
@@ -110,12 +201,10 @@ export function getNearbySpurBuffs({game, receiver}) {
         }
     });
 
-    return {
-        spurAtk: spurAtk,
-        spurSpd: spurSpd,
-        spurDef: spurDef,
-        spurRes: spurRes
-    };
+    receiver.stats.spurAtk = spurAtk;
+    receiver.stats.spurSpd = spurSpd;
+    receiver.stats.spurDef = spurDef;
+    receiver.stats.spurRes = spurRes;
 }
 
 function isOutsideGrid(game, gridX, gridY) {

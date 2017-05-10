@@ -16,5 +16,12 @@ body {
 
 .bonus-attr {
   margin-left: -20px;
+}
+
+.bonus-attr.buff {
   color: #30ab6d;
+}
+
+.bonus-attr.penalty {
+  color: #d9534f;
 }

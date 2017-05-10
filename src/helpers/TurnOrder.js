@@ -20,8 +20,8 @@ class TurnOrderCalculator {
             defWary = this.hasWary(defender);
 
         // Speed info
-        var atkOutspeed = attacker.stats.spd >= defender.stats.spd + 5;
-        var defOutspeed = defender.stats.spd >= attacker.stats.spd + 5;
+        var atkOutspeed = this.spdAfterBonus(attacker) >= this.spdAfterBonus(defender) + 5;
+        var defOutspeed = this.spdAfterBonus(defender) >= this.spdAfterBonus(attacker) + 5;
 
         // Attacker can follow-up
         var atkCF = !attacker.passiveBData.hasOwnProperty("no_follow");
@@ -38,12 +38,12 @@ class TurnOrderCalculator {
         if (defVantage) {
             moveList = this.unitAttacks(defender, defToken, false, moveList);
             vantage = true;
-            console.log('defender used vantage');
+            // console.log('defender used vantage');
         }
 
         // Attacker moves next
         moveList = this.unitAttacks(attacker, atkToken, true, moveList);
-        console.log('attacker attacks');
+        // console.log('attacker attacks');
 
         // Immediate (desperation) attacker follow-up
         if (atkDesperation && atkCF) {
@@ -54,7 +54,7 @@ class TurnOrderCalculator {
                     moveList = this.unitAttacks(attacker, atkToken, true, moveList);
                     desperation = true;
                     atkCF = false; // Attacker has used its follow-up already
-                    console.log('attacker desperation');
+                    // console.log('attacker desperation');
                 }
             }
             // Follow-ups prevented, but attacker outspeeds
@@ -64,7 +64,7 @@ class TurnOrderCalculator {
                     moveList = this.unitAttacks(attacker, atkToken, true, moveList);
                     desperation = true;
                     atkCF = false; // Attacker has used its follow-up already
-                    console.log('attacker desperation + speed');
+                    // console.log('attacker desperation + speed');
                 }
             }
         }
@@ -72,28 +72,28 @@ class TurnOrderCalculator {
         // Foe counterattacks, if they haven't already with vantage
         if (!vantage && defCC) {
             moveList = this.unitAttacks(defender, defToken, false, moveList);
-            console.log('foe counter');
+            // console.log('foe counter');
         }
 
         // FOLLOW-UPS
         // Attacker has wary figher, but defender can still follow-up with combination of two methods
         if (atkWary && defCC && defOutspeed && (defRiposte || defBreak)) {
             moveList = this.unitAttacks(defender, defToken, false, moveList);
-            console.log('foe can trump wary');
+            // console.log('foe can trump wary');
         }
         // Defender has wary figher, but attacker can still follow-up with combination of two methods
         else if (defWary && atkCF && atkOutspeed && (atkBrash || atkBreak)) {
             moveList = this.unitAttacks(attacker, atkToken, true, moveList);
-            console.log('attacker can trump wary');
+            // console.log('attacker can trump wary');
         }
         // Double breaker, cancels each other out and makes a follow-up if outspeeds
         else if (atkBreak && defBreak) {
             if (atkOutspeed && atkCF) {
                 moveList = this.unitAttacks(attacker, atkToken, true, moveList);
-                console.log('breakers cancelled, attacker outspeeds');
+                // console.log('breakers cancelled, attacker outspeeds');
             } else if (defOutspeed && defCC) {
                 moveList = this.unitAttacks(defender, defToken, false, moveList);
-                console.log('breakers cancelled, defender outspeeds');
+                // console.log('breakers cancelled, defender outspeeds');
             }
         }
         // Attacker has breaker
@@ -101,11 +101,11 @@ class TurnOrderCalculator {
             // Defender can counter with riposte AND outspeed, but attacker moves first (if it can)
             if (atkCF) {
                 moveList = this.unitAttacks(attacker, atkToken, true, moveList);
-                console.log('attacker has breaker');
+                // console.log('attacker has breaker');
             }
             if (defRiposte && defOutspeed) {
                 moveList = this.unitAttacks(defender, defToken, false, moveList);
-                console.log('foe is broken but has riposte and outspeeds');
+                // console.log('foe is broken but has riposte and outspeeds');
             }
         }
         // Defender has breaker
@@ -113,12 +113,12 @@ class TurnOrderCalculator {
             // Check if attacker can follow-up anyway with brash assault
             if (atkBrash && atkOutspeed && atkCF) {
                 moveList = this.unitAttacks(attacker, atkToken, true, moveList);
-                console.log('attacker is broken but has brash assault and outspeeds');
+                // console.log('attacker is broken but has brash assault and outspeeds');
             }
             // Defender makes its breaker follow-up
             if (defCC) {
                 moveList = this.unitAttacks(defender, defToken, false, moveList);
-                console.log('defender has breaker');
+                // console.log('defender has breaker');
             }
         }
         // Regular follow-ups
@@ -126,18 +126,18 @@ class TurnOrderCalculator {
             // Defender activated vantage, so follows-up first
             if (vantage && defOutspeed) {
                 moveList = this.unitAttacks(defender, defToken, false, moveList);
-                console.log('defender follow-up first b/e vantage');
+                // console.log('defender follow-up first b/e vantage');
             }
             // Attacker regular follow-up via speed or brash assault
             if (atkCF && (atkOutspeed || atkBrash)) {
                 moveList = this.unitAttacks(attacker, atkToken, true, moveList);
                 atkCF = false;
-                console.log('attacker follow-up (speed or BA)');
+                // console.log('attacker follow-up (speed or BA)');
             }
             // Defender regular follow-up via speed or quick riposte
             if (!vantage && defCC && (defOutspeed || defRiposte)) {
                 moveList = this.unitAttacks(defender, defToken, false, moveList);
-                console.log('defender follow-up (speed or QR)');
+                // console.log('defender follow-up (speed or QR)');
             }
         }
 
@@ -184,7 +184,7 @@ class TurnOrderCalculator {
     // Sweep
     attackerSweep(attacker, defender) {
         var canActivateWithPassive = attacker.passiveBData.hasOwnProperty("sweep") &&
-                                     (attacker.stats.spd - defender.stats.spd >= container.sweep.spd_adv) &&
+                                     (this.spdAfterBonus(attacker) - this.spdAfterBonus(defender) >= container.sweep.spd_adv) &&
                                      attacker.passiveBData.sweep.weapon_type.hasOwnProperty(defender.type);
         return canActivateWithPassive;
     }
@@ -221,7 +221,7 @@ class TurnOrderCalculator {
     // Windsweep
     canActivateSweep(attacker, defender) {
         var canActivateWithPassive = attacker.passiveBData.hasOwnProperty("sweep") &&
-                                     (attacker.stats.spd - defender.stats.spd >= attacker.passiveBData.sweep.spd_adv) &&
+                                     (this.spdAfterBonus(attacker) - this.spdAfterBonus(defender) >= attacker.passiveBData.sweep.spd_adv) &&
                                      attacker.passiveBData.sweep.weapon_type.hasOwnProperty(defender.type);
         return canActivateWithPassive;
     }
@@ -236,6 +236,10 @@ class TurnOrderCalculator {
                !attacker.weaponData.hasOwnProperty("prevent_counter") &&
                !defender.weaponData.hasOwnProperty("prevent_counter") &&
                !this.canActivateSweep(attacker, defender);
+    }
+
+    spdAfterBonus(unit) {
+        return unit.stats.spd + unit.stats.honeSpd + unit.stats.spurSpd - unit.stats.threatenSpd;
     }
 }
 
