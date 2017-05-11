@@ -48,7 +48,7 @@ export function getPermutation(array, prefix) {
     }
 
     var result = array[0].reduce(function (result, value) {
-    	var div = (prefix) ? ',' : ''
+    	var div = (prefix) ? ',' : '';
         return result.concat(getPermutation(array.slice(1), prefix + div + value));
     }, []);
     return result;
@@ -67,7 +67,7 @@ export function printGrid(grid) {
 
 export function gridFromList(list, maxX, maxY) {
 	// Given a list of {x, y} objects, return a grid with items in the list marked with 1s
-	var grid = createArray(maxY, maxX)
+	var grid = createArray(maxY, maxX);
 	list.forEach(function(item) {
 		grid[item.y][item.x] = 1;
 	});

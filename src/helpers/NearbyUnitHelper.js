@@ -52,10 +52,11 @@ export function flatDamageNearbyUnits({game, attacker, target, range, dmg}) {
     });
 }
 
-export function healNearbyUnits({game, healer, range, healAmt}) {
+export function healNearbyUnits({game, healer, healerPos, range, healAmt}) {
     // Get a list of units to damage based off the pattern provided
     let unitList = [];
-    let pairs = utils.pairsWithinNSpaces(toGrid(healer.x), toGrid(healer.y), game.maxGridX, game.maxGridY, range);
+    let pairs = utils.pairsWithinNSpaces(toGrid(healerPos.x), toGrid(healerPos.y), game.maxGridX,
+                                         game.maxGridY, range);
     pairs.forEach(({x: x, y: y}) => {
         let unitID = game.grid[y][x].unit;
         if (unitID === 0 || unitID === healer.id) return;
@@ -156,16 +157,13 @@ export function applyNearbyThreatenPenalties(game, threatener) {
     });
 }
 
-export function getNearbySpurBuffs(game, receiver, receiverX=null, receiverY=null) {
+export function getNearbySpurBuffs(game, receiver, receiverPos=null) {
     // Boosts a unit's bonus stats by all nearby spur buffs
     // Iterate through all friendly units, see if this unit is in range of one of their spur buffs
 
     // If no unit X/Y is provided just use the unit's current position
-    var receiverPos;
-    if (receiverX === null && receiverY === null) {
+    if (receiverPos === null) {
         receiverPos = {x: receiver.x, y: receiver.y};
-    } else {
-        receiverPos = {x: receiverX, y: receiverY};
     }
 
     let spurAtk = 0,

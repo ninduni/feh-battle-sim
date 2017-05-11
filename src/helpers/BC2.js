@@ -197,7 +197,7 @@ class BC2 {
             advantage = this.advantageBonus(attacker, defender),
             mit = this.mitAfterBonuses(attacker, defender),
             classMod = (attacker.type === "Staff") ? 0.5 : 1;
-
+        console.log(atk, effective, advantage, mit);
         var afterEff = Math.trunc(atk * effective);
 
         return Math.max(0, Math.trunc((afterEff + Math.trunc(afterEff * advantage) - mit) * classMod));
@@ -288,7 +288,7 @@ class BC2 {
     advantageBonus(attacker, defender) {
         var weaponColorAdv = this.weaponColorAdvantage(attacker.color, defender.color, attacker.weaponData, defender.weaponData);
         var triAdv = this.triAdvantage(attacker.color, defender.color);
-        var atkMod = 1;
+        var atkMod = 0;
 
         // get base triangle advantage (or color advantage, i.e. effective against colorless)
         if (weaponColorAdv > 0) {

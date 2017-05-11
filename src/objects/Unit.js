@@ -1,6 +1,7 @@
 import * as utils from 'helpers/utils';
 import { BattleCalc } from 'helpers/BC2';
 import * as NearbyUnitHelper from 'helpers/NearbyUnitHelper';
+import * as AfterCombatHelper from 'helpers/AfterCombatHelper';
 // import { BattleCalc } from 'helpers/BattleCalculator';
 import { assistInfo } from 'skills/assist';
 import { weaponInfo } from 'skills/weapon';
@@ -155,7 +156,7 @@ export default class Unit extends Phaser.Sprite {
                 if (attackPos !== null) {
                     var target = this.game.units[hoverUnit];
 
-                    var battleResult = this.dryRunAttack(target, fromGrid(attackPos.x), fromGrid(attackPos.y));
+                    var battleResult = this.dryRunAttack(target, {x: fromGrid(attackPos.x), y: fromGrid(attackPos.y)});
 
                     this.game.grid[toGrid(this.y)][toGrid(this.x)].showAttack();
                     this.game.grid[attackPos.y][attackPos.x].showMove();
@@ -217,6 +218,12 @@ export default class Unit extends Phaser.Sprite {
 
     endTurn() {
         this.setTurnEnd();
+
+        // Penalties wear off
+        this.stats.threatenAtk = 0;
+        this.stats.threatenSpd = 0;
+        this.stats.threatenDef = 0;
+        this.stats.threatenRes = 0;
 
         this.game.state.states[this.game.state.current].saveTurnState(
             this.name + ' moves'
@@ -280,18 +287,18 @@ export default class Unit extends Phaser.Sprite {
         this.y = toGrid(this.y) * 90 + 45;
     }
 
-    dryRunAttack(target, newX, newY) {
+    dryRunAttack(target, attackPos) {
         // Calculate spur buffs on this unit and the target
-        NearbyUnitHelper.getNearbySpurBuffs(this.game, this, newX, newY);
+        NearbyUnitHelper.getNearbySpurBuffs(this.game, this, attackPos);
         NearbyUnitHelper.getNearbySpurBuffs(this.game, target);
 
         var battleResult = BattleCalc.dryRun(this, target);
         return battleResult;
     }
 
-    attack(target, newX, newY) {
+    attack(target, attackPos) {
         // Calculate spur buffs on this unit and the target
-        NearbyUnitHelper.getNearbySpurBuffs(this.game, this, newX, newY);
+        NearbyUnitHelper.getNearbySpurBuffs(this.game, this, attackPos);
         NearbyUnitHelper.getNearbySpurBuffs(this.game, target);
 
         let battleResult = BattleCalc.run(this, target);
@@ -307,24 +314,51 @@ export default class Unit extends Phaser.Sprite {
                 pattern: this.specialData.before_combat_aoe.pattern
             });
         }
-        // Deal nonlethal post-combat damage to nearby units
-        if (this.passiveCData.hasOwnProperty("after_combat_aoe")) {
-            NearbyUnitHelper.flatDamageNearbyUnits({
+
+        // If this unit died during combat, don't run post-combat effects
+        if (this.stats.hp > 0) {
+            // Deal nonlethal post-combat damage to nearby units
+            if (this.passiveCData.hasOwnProperty("after_combat_aoe")) {
+                NearbyUnitHelper.flatDamageNearbyUnits({
+                    game: this.game,
+                    attacker: this,
+                    target: target,
+                    range: 2,
+                    dmg: this.passiveCData.after_combat_aoe
+                });
+            }
+            // Heal nearby units after combat
+            if (this.passiveCData.hasOwnProperty("after_combat_aoe_heal")) {
+                NearbyUnitHelper.healNearbyUnits({
+                    game: this.game,
+                    healer: this,
+                    healerPos: attackPos,
+                    range: 1,
+                    healAmt: this.passiveCData.after_combat_aoe_heal
+                });
+            }
+            // Apply seal effects from target to this unit and this unit to target
+            AfterCombatHelper.applySealEffects(this, target);
+            // Apply after-combat boosts from e.g. rogue dagger
+            AfterCombatHelper.applyAfterCombatBonus(this);
+        }
+
+        // Also helpfully run the same methods for the target
+        if (target.stats.hp > 0) {
+            AfterCombatHelper.applySealEffects(target, this);
+            AfterCombatHelper.applyAfterCombatBonus(target);
+        }
+
+        // Do post-combat movement shenanigans
+        if (this.stats.hp > 0) {
+            return AfterCombatHelper.afterCombatMovement({
                 game: this.game,
                 attacker: this,
-                target: target,
-                range: 2,
-                dmg: this.passiveCData.after_combat_aoe
+                attackPos: attackPos,
+                target: target
             });
-        }
-        // Heal nearby units after combat
-        if (this.passiveCData.hasOwnProperty("after_combat_aoe_heal")) {
-            NearbyUnitHelper.healNearbyUnits({
-                game: this.game,
-                healer: {id: this.id, x: newX, y: newY},
-                range: 1,
-                healAmt: this.passiveCData.after_combat_aoe_heal
-            });
+        } else {
+            return false;
         }
     }
 
@@ -407,19 +441,20 @@ export default class Unit extends Phaser.Sprite {
             console.log('attacking!');
             target = this.game.grid[toGrid(this.y)][toGrid(this.x)].unit;
             console.log(this.name + ' is attacking ' + this.game.units[target].name);
-            this.attack(this.game.units[target], fromGrid(attackPos.x), fromGrid(attackPos.y));
-
-            this.x = fromGrid(attackPos.x);
-            this.y = fromGrid(attackPos.y);
+            let handledMove = this.attack(this.game.units[target], {x: fromGrid(attackPos.x), y: fromGrid(attackPos.y)});
+            if (!handledMove) {
+                this.x = fromGrid(attackPos.x);
+                this.y = fromGrid(attackPos.y);
+            }
         }
         else if (assistPos !== null) {
             console.log('assisting!');
             target = this.game.grid[toGrid(this.y)][toGrid(this.x)].unit;
             console.log(this.name + ' is assisting ' + this.game.units[target].name);
-            var handledMove = this.doAssist(this.game.units[target], assistPos);
+            let handledMove = this.doAssist(this.game.units[target], assistPos);
 
             // Some assists reposition us. If that one did not, then move to assisting position
-            if (handledMove === false) {
+            if (!handledMove) {
                 this.x = fromGrid(assistPos.x);
                 this.y = fromGrid(assistPos.y);
             }
@@ -455,6 +490,7 @@ export default class Unit extends Phaser.Sprite {
             this.game.grid[toGrid(this.lastY)][toGrid(this.lastX)].unit = 0;
         }
         this.game.grid[toGrid(this.y)][toGrid(this.x)].unit = this.id;
+        this.game.gridObj.debugGridShowProp('unit');
     }
 
     getAttackPos() {
