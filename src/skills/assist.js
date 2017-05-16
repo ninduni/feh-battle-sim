@@ -32,6 +32,7 @@ export const assistInfo =
     },
     "Physic" : {
         "description" : "Restores 8 HP to target 2 spaces away.",
+        "range": 2,
         "weapon_unique" : "Staff"
     },
     "Pivot" : {

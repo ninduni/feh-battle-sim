@@ -2,6 +2,7 @@ import * as utils from 'helpers/utils';
 import { BattleCalc } from 'helpers/BC2';
 import * as NearbyUnitHelper from 'helpers/NearbyUnitHelper';
 import * as AfterCombatHelper from 'helpers/AfterCombatHelper';
+import { MovementAssister } from 'helpers/AssistHelper';
 // import { BattleCalc } from 'helpers/BattleCalculator';
 import { assistInfo } from 'skills/assist';
 import { weaponInfo } from 'skills/weapon';
@@ -364,22 +365,10 @@ export default class Unit extends Phaser.Sprite {
 
     doAssist(target, assistPos) {
         // Return true if all the movement/repositioning effects for THIS UNIT happened during this method
-        switch(this.assist) {
-            case 'Swap':
-                console.log('swapping');
-                // Set the target's position to the unit's, and the unit's to the target's
-                var targetPos = {x: target.x, y: target.y};
-                target.x = fromGrid(assistPos.x);
-                target.y = fromGrid(assistPos.y);
-                target.updateUnitPosition();
-
-                this.x = targetPos.x;
-                this.y = targetPos.y;
-                this.updateUnitPosition();
-                return true;
-            default:
-                return false;
-        }
+        let moveAssist = new MovementAssister(
+            this.game, this, target, {x: fromGrid(assistPos.x), y: fromGrid(assistPos.y)}
+        );
+        return moveAssist.movementAssist();
     }
 
     onClick() {
@@ -452,7 +441,6 @@ export default class Unit extends Phaser.Sprite {
             target = this.game.grid[toGrid(this.y)][toGrid(this.x)].unit;
             console.log(this.name + ' is assisting ' + this.game.units[target].name);
             let handledMove = this.doAssist(this.game.units[target], assistPos);
-
             // Some assists reposition us. If that one did not, then move to assisting position
             if (!handledMove) {
                 this.x = fromGrid(assistPos.x);
@@ -490,6 +478,8 @@ export default class Unit extends Phaser.Sprite {
             this.game.grid[toGrid(this.lastY)][toGrid(this.lastX)].unit = 0;
         }
         this.game.grid[toGrid(this.y)][toGrid(this.x)].unit = this.id;
+        this.lastX = this.x;
+        this.lastY = this.y;
         this.game.gridObj.debugGridShowProp('unit');
     }
 

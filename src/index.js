@@ -151,6 +151,12 @@ class Game extends Phaser.Game {
         unit.updateSpecCD(unit.specialData.cooldown);
     }
 
+    setAssist(char, assist) {
+        var unit = this.units[char];
+        unit.assist = assist;
+        unit.assistData = assistInfo[assist] || {};
+    }
+
     setSkill(char, skill, slot) {
         var unit = this.units[char];
         unit['passive' + slot] = skill;
@@ -244,6 +250,13 @@ $('#weapon').on('change', function() {
         char = $('#selected-character').val();
 
     game.setWeapon(char, weapon);
+});
+
+$('#assist').on('change', function() {
+    var assist = $('#assist').val(),
+        char = $('#selected-character').val();
+
+    game.setAssist(char, assist);
 });
 
 $('#special').on('change', function() {

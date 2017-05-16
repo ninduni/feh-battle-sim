@@ -108,3 +108,57 @@ export function roundNum(unrounded, roundUp) {
 
     return Math.floor(unrounded);
 }
+
+export function isMovable(unit, unitDest, ignoreUnit=false) {
+    // Checks whether a unit can move onto a square
+    switch(unit.movementType) {
+        case 'Infantry':
+        case 'Armor':
+            if (![1, 2].includes(unitDest.terrain)) return false;
+            break;
+        case 'Cavalry':
+            if (![1].includes(unitDest.terrain)) return false;
+            break;
+        case 'Flying':
+            if (![1, 2, 3].includes(unitDest.terrain)) return false;
+            break;
+    }
+    if (unitDest.unit !== 0 && !ignoreUnit) return false;
+    return true;
+}
+
+export function movementVector(attacker, target, away) {
+    // Returns a vector representing which direction moves towards (or away from) enemy
+    var xDiff = target.x - attacker.x,
+        yDiff = target.y - attacker.y,
+        vec;
+    if (xDiff && yDiff) {
+        // Something's wrong, not adjacent, movement skills not allowed on range
+        console.log('MOVEMENT SKILL NOT ALLOWED ON RANGE UNIT');
+    } else if (xDiff > 0) {
+        vec = {x: 1, y: 0};
+    } else if (xDiff < 0) {
+        vec = {x: -1, y: 0};
+    } else if (yDiff > 0) {
+        vec = {x: 0, y: 1};
+    } else if (yDiff < 0) {
+        vec = {x: 0, y: -1};
+    }
+    return {x: vec.x * Math.pow(-1, away), y: vec.y * Math.pow(-1, away)};
+}
+
+export function isOutsideGrid(game, gridX, gridY) {
+    return (gridX < 0 || gridX >= game.maxGridX || gridY < 0 || gridY >= game.maxGridY);
+}
+
+export function toGrid(i) {
+    return Math.floor(i / 90);
+}
+
+export function fromGrid(i) {
+    return (i * 90) + 45;
+}
+
+export function distance(unitA, unitB) {
+    return Math.abs(toGrid(unitA.x) - toGrid(unitB.x)) + Math.abs(toGrid(unitA.y) - toGrid(unitB.y));
+}

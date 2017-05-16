@@ -30,6 +30,10 @@ export default class Tile {
         this.debugGrid = d;
     }
 
+    isWall() {
+        return this.terrain === 0;
+    }
+
     showBlue() {
         this.blueOverlay.visible = true;
     }
