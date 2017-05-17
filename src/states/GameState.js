@@ -50,6 +50,7 @@ class GameState extends Phaser.State {
                              type: 'axe',
                              id: 1});
         anna.assist = 'Swap';
+        anna.assistData = assistInfo[anna.assist];
         this.game.anna = anna;
         this.game.grid[6][1].unit = anna.id;
         this.game.units[anna.id] = anna;

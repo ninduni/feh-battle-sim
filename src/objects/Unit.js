@@ -2,7 +2,7 @@ import * as utils from 'helpers/utils';
 import { BattleCalc } from 'helpers/BC2';
 import * as NearbyUnitHelper from 'helpers/NearbyUnitHelper';
 import * as AfterCombatHelper from 'helpers/AfterCombatHelper';
-import { MovementAssister } from 'helpers/AssistHelper';
+import { runAssist } from 'helpers/AssistHelper';
 // import { BattleCalc } from 'helpers/BattleCalculator';
 import { assistInfo } from 'skills/assist';
 import { weaponInfo } from 'skills/weapon';
@@ -365,10 +365,7 @@ export default class Unit extends Phaser.Sprite {
 
     doAssist(target, assistPos) {
         // Return true if all the movement/repositioning effects for THIS UNIT happened during this method
-        let moveAssist = new MovementAssister(
-            this.game, this, target, {x: fromGrid(assistPos.x), y: fromGrid(assistPos.y)}
-        );
-        return moveAssist.movementAssist();
+        return runAssist(this.game, this, target, {x: fromGrid(assistPos.x), y: fromGrid(assistPos.y)});
     }
 
     onClick() {
