@@ -2,7 +2,6 @@
  * Runs combat damage calculations against units "nearby" to the main combatants
  **/
 
-import { BattleCalc } from 'helpers/BC2';
 import * as utils from 'helpers/utils';
 
 export function damageNearbyUnits({game, attacker, defender, aoeAtk, aoeMod, magical, pattern}) {
@@ -24,12 +23,21 @@ export function damageNearbyUnits({game, attacker, defender, aoeAtk, aoeMod, mag
     let aoeDmg = 0;
     // Deal nonlethal damage to each unit
     unitList.forEach((unit) => {
-        aoeDmg = aoeAtk - BattleCalc.mitAfterBonuses(attacker, unit);
+        aoeDmg = aoeAtk - outOfCombatMit(attacker, unit);
         aoeDmg = utils.roundNum(aoeDmg * aoeMod, false);
         aoeDmg = Math.max(aoeDmg, 0);
         // Set new unit HP
         unit.stats.hp = Math.max(unit.stats.hp - aoeDmg, 1);
     });
+}
+
+function outOfCombatMit(attacker, defender) {
+    // Returns the value of the defender's out of combat mitigation against the attacker's damage type
+    if (attacker.weaponData.magical) {
+        return defender.stats.res + defender.stats.honeRes - defender.stats.threatenRes;
+    } else {
+        return defender.stats.def + defender.stats.honeDef - defender.stats.threatenDef;
+    }
 }
 
 export function flatDamageNearbyUnits({game, attacker, target, range, dmg}) {

@@ -19,9 +19,10 @@ class TurnOrderCalculator {
             atkWary = this.hasWary(attacker),
             defWary = this.hasWary(defender);
 
-        // Speed info
-        var atkOutspeed = this.spdAfterBonus(attacker) >= this.spdAfterBonus(defender) + 5;
-        var defOutspeed = this.spdAfterBonus(defender) >= this.spdAfterBonus(attacker) + 5;
+        // Speed info, note that this assumes we've already calculated the speed
+        // after all hones, spurs, penalties, etc.
+        var atkOutspeed = attacker.combatStats.spd >= defender.combatStats.spd + 5;
+        var defOutspeed = defender.combatStats.spd >= attacker.combatStats.spd + 5;
 
         // Attacker can follow-up
         var atkCF = !attacker.passiveBData.hasOwnProperty("no_follow");
@@ -184,7 +185,7 @@ class TurnOrderCalculator {
     // Sweep
     attackerSweep(attacker, defender) {
         var canActivateWithPassive = attacker.passiveBData.hasOwnProperty("sweep") &&
-                                     (this.spdAfterBonus(attacker) - this.spdAfterBonus(defender) >= container.sweep.spd_adv) &&
+                                     (attacker.combatStats.spd - defender.combatStats.spd >= attacker.passiveBData.sweep.spd_adv) &&
                                      attacker.passiveBData.sweep.weapon_type.hasOwnProperty(defender.type);
         return canActivateWithPassive;
     }
@@ -221,7 +222,7 @@ class TurnOrderCalculator {
     // Windsweep
     canActivateSweep(attacker, defender) {
         var canActivateWithPassive = attacker.passiveBData.hasOwnProperty("sweep") &&
-                                     (this.spdAfterBonus(attacker) - this.spdAfterBonus(defender) >= attacker.passiveBData.sweep.spd_adv) &&
+                                     (attacker.combatStats.spd - defender.combatStats.spd >= attacker.passiveBData.sweep.spd_adv) &&
                                      attacker.passiveBData.sweep.weapon_type.hasOwnProperty(defender.type);
         return canActivateWithPassive;
     }
@@ -239,7 +240,7 @@ class TurnOrderCalculator {
     }
 
     spdAfterBonus(unit) {
-        return unit.stats.spd + unit.stats.honeSpd + unit.stats.spurSpd - unit.stats.threatenSpd;
+        return Math.min(0, unit.stats.spd + unit.stats.honeSpd + unit.stats.spurSpd - unit.stats.threatenSpd);
     }
 }
 

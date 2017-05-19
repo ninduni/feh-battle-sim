@@ -33,6 +33,19 @@ export default class Tile {
     isWall() {
         return this.terrain === 0;
     }
+    isPlain() {
+        return this.terrain === 1;
+    }
+    isForest() {
+        return this.terrain === 2;
+    }
+    isImpassible() {
+        // No need to differentiate between mountain and water, but might be in future
+        return this.terrain === 3;
+    }
+    isFort() {
+        return this.terrain === 4;
+    }
 
     showBlue() {
         this.blueOverlay.visible = true;

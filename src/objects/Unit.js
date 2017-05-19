@@ -427,11 +427,11 @@ export default class Unit extends Phaser.Sprite {
             console.log('attacking!');
             target = this.game.grid[toGrid(this.y)][toGrid(this.x)].unit;
             console.log(this.name + ' is attacking ' + this.game.units[target].name);
+            // Move to attack position first
+            this.x = fromGrid(attackPos.x);
+            this.y = fromGrid(attackPos.y);
+
             let handledMove = this.attack(this.game.units[target], {x: fromGrid(attackPos.x), y: fromGrid(attackPos.y)});
-            if (!handledMove) {
-                this.x = fromGrid(attackPos.x);
-                this.y = fromGrid(attackPos.y);
-            }
         }
         else if (assistPos !== null) {
             console.log('assisting!');
@@ -741,6 +741,11 @@ export default class Unit extends Phaser.Sprite {
 
     hasWeapon() {
         return this.weaponName !== 'None';
+    }
+
+    getCurrentTile() {
+        // Returns the tile object that this unit currently occupies
+        return this.game.grid[toGrid(this.y)][toGrid(this.x)];
     }
 }
 

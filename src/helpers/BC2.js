@@ -25,8 +25,6 @@ class BC2 {
             aoeDmg = 0,
             aoeMod = 0;
 
-        var moveList = TurnOrderCalc.determineTurnOrder(attacker, defender);
-
         // Mutable things: store special cooldowns and health
         var attackerSpecCD = attacker.specCurrCooldown,
             defenderSpecCD = defender.specCurrCooldown,
@@ -43,13 +41,17 @@ class BC2 {
         this.applyInitiateBonus(attacker);
         this.applyDefendBonus(defender);
 
+        // Calculate the stat values to use in combat based off hones, spurs, and penalties
+        this.calculateCombatStats(attacker);
+        this.calculateCombatStats(defender);
+
         // AOE damage before combat
         if (attacker.specialData.hasOwnProperty("before_combat_aoe") && attackerSpecCD <= 0) {
             // reset cooldown
             attackerSpecCD = this.getSpecialCooldown(attacker.specialData, attacker.weaponData, attacker.assistData);
-            // calculate damage
-            aoeAtk = this.attackAfterBonuses(attacker);
-            aoeDmg = aoeAtk - this.mitAfterBonuses(attacker, defender);
+            // Calculate damage, do not apply in-combat bonuses
+            aoeAtk = this.outOfCombatAtk(attacker);
+            aoeDmg = aoeAtk - this.outOfCombatMit(attacker, defender);
             // check for damage multiplier
             aoeMod = attacker.specialData.hasOwnProperty("aoe_dmg_mod") || 1;
             aoeDmg = utils.roundNum(aoeDmg * aoeMod, false);
@@ -58,6 +60,9 @@ class BC2 {
             // Can't be lethal damage
             defenderHP = Math.max(defenderHP - aoeDmg, 1);
         }
+
+        // Determine turn order
+        var moveList = TurnOrderCalc.determineTurnOrder(attacker, defender);
 
         for (var i = 0; i < moveList.length; i++) {
             // Quit early if either character is dead
@@ -192,10 +197,10 @@ class BC2 {
 
     calculateAttackNoSpecial(attacker, defender) {
         // From http://feheroes.gamepedia.com/Damage_Calculation#Complete_formula
-        var atk = this.attackAfterBonuses(attacker),
+        var atk = attacker.combatStats.atk,
             effective = this.effectiveBonus(attacker, defender),
             advantage = this.advantageBonus(attacker, defender),
-            mit = this.mitAfterBonuses(attacker, defender),
+            mit = this.mitigation(attacker, defender),
             classMod = (attacker.type === "Staff") ? 0.5 : 1;
         console.log(atk, effective, advantage, mit);
         var afterEff = Math.trunc(atk * effective);
@@ -204,10 +209,10 @@ class BC2 {
     }
 
     calculateAttack(attacker, defender, attackerSpecCD, defenderSpecCD) {
-        var atk = this.attackAfterBonuses(attacker),
+        var atk = attacker.combatStats.atk,
             effective = this.effectiveBonus(attacker, defender),
             advantage = this.advantageBonus(attacker, defender),
-            mit = this.mitAfterBonuses(attacker, defender),
+            mit = this.mitigation(attacker, defender),
             // Mitigation-modifying specials, e.g. luna
             mitMod = this.mitigationModifier(attacker, defender, attackerSpecCD),
             spcBoost = this.specialDmgBoost(attacker, attackerSpecCD),
@@ -233,16 +238,40 @@ class BC2 {
 
     // HELPER FUNCTIONS
 
-    attackAfterBonuses(attacker) {
-        return attacker.stats.atk + attacker.stats.honeAtk + attacker.stats.spurAtk - attacker.stats.threatenAtk;
+    calculateCombatStats(unit) {
+        // This object will hold stats to use for this particular combat, and should be calculated first
+        unit.combatStats = {
+            atk: Math.max(0, unit.stats.atk + unit.stats.honeAtk + unit.stats.spurAtk - unit.stats.threatenAtk),
+            spd: Math.max(0, unit.stats.spd + unit.stats.honeSpd + unit.stats.spurSpd - unit.stats.threatenSpd),
+            def: Math.max(0, unit.stats.def + unit.stats.honeDef + unit.stats.spurDef - unit.stats.threatenDef),
+            res: Math.max(0, unit.stats.res + unit.stats.honeRes + unit.stats.spurRes - unit.stats.threatenRes)
+        };
+
+        // Apply any additional stat-based skill increases
+        if (unit.weaponData.hasOwnProperty('add_bonus')) {
+            unit.combatStats.atk += unit.stats.honeAtk + unit.stats.honeSpd + unit.stats.honeDef + unit.stats.honeRes;
+        }
     }
 
-    mitAfterBonuses(attacker, defender) {
+    mitigation(attacker, defender) {
         // Gets the defender's relevant mitigation amount, taking into account the attacker's damage type
         if (attacker.weaponData.magical) {
-            return defender.stats.res + defender.stats.honeRes + defender.stats.spurRes - defender.stats.threatenRes;
+            return defender.combatStats.res;
         } else {
-            return defender.stats.def + defender.stats.honeDef + defender.stats.spurDef - defender.stats.threatenDef;
+            return defender.combatStats.def;
+        }
+    }
+
+    outOfCombatAtk(attacker) {
+        return attacker.stats.atk + attacker.stats.honeAtk - attacker.stats.threatenAtk;
+    }
+
+    outOfCombatMit(attacker, defender) {
+        // Returns the value of the defender's out of combat mitigation against the attacker's damage type
+        if (attacker.weaponData.magical) {
+            return defender.stats.res + defender.stats.honeRes - defender.stats.threatenRes;
+        } else {
+            return defender.stats.def + defender.stats.honeDef - defender.stats.threatenDef;
         }
     }
 
@@ -352,18 +381,24 @@ class BC2 {
     }
 
     mitigationModifier(attacker, defender, attackerSpecCD) {
+        var mitMod = 0;
+        // Mitigation-reducing specials
         if (attacker.specialData.hasOwnProperty("enemy_def_res_mod") && attackerSpecCD <= 0) {
             this.atkSpec = true;
-            return -attacker.specialData.enemy_def_res_mod;
-        } else {
-            return 0;
+            mitMod -= attacker.specialData.enemy_def_res_mod;
         }
+        // Terrain bonus
+        var defenderTile = defender.getCurrentTile();
+        if (defender.getCurrentTile().isFort()) {
+            mitMod += 0.3;
+        }
+        return mitMod;
     }
 
     specialDmgBoost(attacker, attackerSpecCD) {
         if (attacker.specialData.hasOwnProperty("dmg_buff_by_stat") && attackerSpecCD <= 0) {
             this.atkSpec = true;
-            return attacker.specialData.dmg_buff_by_stat.buff * attacker.stats[attacker.specialData.dmg_buff_by_stat.stat];
+            return attacker.specialData.dmg_buff_by_stat.buff * attacker.combatStats[attacker.specialData.dmg_buff_by_stat.stat];
         } else if (attacker.specialData.hasOwnProperty("dmg_suffer_buff") && attackerSpecCD <= 0) {
             this.atkSpec = true;
             return (attacker.hp - attacker.currHP) * attacker.specialData.dmg_suffer_buff;
