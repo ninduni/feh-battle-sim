@@ -201,11 +201,12 @@ class BC2 {
             effective = this.effectiveBonus(attacker, defender),
             advantage = this.advantageBonus(attacker, defender),
             mit = this.mitigation(attacker, defender),
+            mitMod = this.terrainMitigation(attacker, defender),
             classMod = (attacker.type === "Staff") ? 0.5 : 1;
         console.log(atk, effective, advantage, mit);
         var afterEff = Math.trunc(atk * effective);
-
-        return Math.max(0, Math.trunc((afterEff + Math.trunc(afterEff * advantage) - mit) * classMod));
+        var moddedMit = mit + Math.trunc(mit * mitMod);
+        return Math.max(0, Math.trunc((afterEff + Math.trunc(afterEff * advantage) - moddedMit) * classMod));
     }
 
     calculateAttack(attacker, defender, attackerSpecCD, defenderSpecCD) {
@@ -213,8 +214,7 @@ class BC2 {
             effective = this.effectiveBonus(attacker, defender),
             advantage = this.advantageBonus(attacker, defender),
             mit = this.mitigation(attacker, defender),
-            // Mitigation-modifying specials, e.g. luna
-            mitMod = this.mitigationModifier(attacker, defender, attackerSpecCD),
+            mitMod = this.mitigationModifier(attacker, defender, attackerSpecCD) + this.terrainMitigation(attacker, defender),
             spcBoost = this.specialDmgBoost(attacker, attackerSpecCD),
             classMod = (attacker.type === "Staff") ? 0.5 : 1;
 
@@ -387,9 +387,14 @@ class BC2 {
             this.atkSpec = true;
             mitMod -= attacker.specialData.enemy_def_res_mod;
         }
-        // Terrain bonus
-        var defenderTile = defender.getCurrentTile();
-        if (defender.getCurrentTile().isFort()) {
+        return mitMod;
+    }
+
+    terrainMitigation(attacker, defender) {
+        var mitMod = 0;
+        // THIS IS THE WORST THING EVER TODO TODO FIX THIS
+        var defenderTile = defender.game.grid[defender.combatPos.y][defender.combatPos.x];
+        if (defenderTile.isFort()) {
             mitMod += 0.3;
         }
         return mitMod;

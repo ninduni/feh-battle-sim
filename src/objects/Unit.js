@@ -157,6 +157,9 @@ export default class Unit extends Phaser.Sprite {
                 if (attackPos !== null) {
                     var target = this.game.units[hoverUnit];
 
+                    this.combatPos = {x: attackPos.x, y: attackPos.y};
+                    target.combatPos = {x: toGrid(target.x), y: toGrid(target.y)};
+
                     var battleResult = this.dryRunAttack(target, {x: fromGrid(attackPos.x), y: fromGrid(attackPos.y)});
 
                     this.game.grid[toGrid(this.y)][toGrid(this.x)].showAttack();
@@ -255,32 +258,29 @@ export default class Unit extends Phaser.Sprite {
     }
 
     setMovementType() {
+        var tileCosts = {1: 1, 4: 1};
         switch(this.movementType) {
+
             case 'Infantry':
-                this.game.pathfinder.setAcceptableTiles([1,2]);
-                this.game.pathfinder.setTileCost(1, 1);
-                this.game.pathfinder.setTileCost(2, 2);
+                tileCosts[2] = 2;
                 this.movement = 2;
                 break;
             case 'Cavalry':
-                this.game.pathfinder.setAcceptableTiles([1]);
-                this.game.pathfinder.setTileCost(1, 1);
                 this.movement = 3;
                 break;
             case 'Armor':
-                this.game.pathfinder.setAcceptableTiles([1,2]);
-                this.game.pathfinder.setTileCost(1, 1);
-                this.game.pathfinder.setTileCost(2, 1);
+                tileCosts[2] = 1;
                 this.movement = 1;
                 break;
             case 'Flying':
-                this.game.pathfinder.setAcceptableTiles([1,2,3]);
-                this.game.pathfinder.setTileCost(1, 1);
-                this.game.pathfinder.setTileCost(2, 1);
-                this.game.pathfinder.setTileCost(3, 1);
+                tileCosts[3] = 1;
                 this.movement = 2;
                 break;
         }
+        this.game.pathfinder.setAcceptableTiles(_.map(_.keys(tileCosts), (k) => parseInt(k)));
+        _.forIn(tileCosts, (value, key) => {
+            this.game.pathfinder.setTileCost(key, value);
+        });
     }
 
     snapToGrid() {
@@ -741,11 +741,6 @@ export default class Unit extends Phaser.Sprite {
 
     hasWeapon() {
         return this.weaponName !== 'None';
-    }
-
-    getCurrentTile() {
-        // Returns the tile object that this unit currently occupies
-        return this.game.grid[toGrid(this.y)][toGrid(this.x)];
     }
 }
 

@@ -30,6 +30,10 @@ export default class Tile {
         this.debugGrid = d;
     }
 
+    isPassable(movementType) {
+        return true;
+    }
+
     isWall() {
         return this.terrain === 0;
     }
@@ -39,7 +43,7 @@ export default class Tile {
     isForest() {
         return this.terrain === 2;
     }
-    isImpassible() {
+    isMountain() {
         // No need to differentiate between mountain and water, but might be in future
         return this.terrain === 3;
     }
