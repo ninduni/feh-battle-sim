@@ -1,3 +1,4 @@
+import { game } from 'index';
 import { TurnOrderCalc } from 'helpers/TurnOrder';
 import * as utils from 'helpers/utils';
 
@@ -393,7 +394,7 @@ class BC2 {
     terrainMitigation(attacker, defender) {
         var mitMod = 0;
         // THIS IS THE WORST THING EVER TODO TODO FIX THIS
-        var defenderTile = defender.game.grid[defender.combatPos.y][defender.combatPos.x];
+        var defenderTile = game.grid[defender.y][defender.x];
         if (defenderTile.isFort()) {
             mitMod += 0.3;
         }

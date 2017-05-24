@@ -1,11 +1,17 @@
-export default class HealthBar {
-    constructor(game, parent, isFriendly, hp) {
-        this.game = game;
-        this.parent = parent;
+import { game } from 'index';
+
+export default class SpriteUI extends Phaser.Group {
+    constructor(unit, isFriendly, hp) {
+        super(game);
+
+        this.unit = unit;
         this.isFriendly = isFriendly;
 
+        // Initialize so we redraw once
+        this.lasthp = 0;
+
         // Healthbar background
-        this.background = this.game.add.graphics(-25.5, 40);
+        this.background = game.add.graphics(-25.5, 40);
         this.background.anchor.setTo(0.5);
         this.background.beginFill(0x000000);
         this.background.lineStyle(6.5, 0x000000, 1);
@@ -13,22 +19,41 @@ export default class HealthBar {
         this.background.lineTo(51, -5);
         this.background.endFill();
 
-        parent.addChild(this.background);
+        // sprite.addChild(this.background);
+        this.addChild(this.background);
 
-        this.healthbar = this.game.add.graphics(-25, 40);
+        this.healthbar = game.add.graphics(-25, 40);
         this.healthbar.anchor.setTo(0.5);
 
-        parent.addChild(this.healthbar);
+        // sprite.addChild(this.healthbar);
+        this.addChild(this.healthbar);
 
         // Health text
         var style = { font: "12px Arial", fill: "#ffffff", align: "left",
                       stroke: "#000000", strokeThickness: 2 };
-        // this.healthbarText = this.game.add.text(-35, 37, this.stats.hp, style);
+        // this.healthbarText = game.add.text(-35, 37, this.unit.stats.hp, style);
         var font = (isFriendly) ? 'bluefont' : 'redfont';
-        this.healthbarText = this.game.add.bitmapText(-35, 25, font, hp, 30);
+        this.healthbarText = game.add.bitmapText(-35, 25, font, hp, 30);
         this.healthbarText.anchor.setTo(0.5);
 
-        parent.addChild(this.healthbarText);
+        // sprite.addChild(this.healthbarText);
+        this.addChild(this.healthbarText);
+    }
+
+    update() {
+        // Detects HP changes on the unit and redraws the healthbar
+        if (this.lasthp !== this.unit.stats.hp) {
+            console.log(this.unit.stats.hp, this.lasthp);
+            this.redraw(this.unit.stats.hp, this.unit.stats.totalhp);
+            this.lasthp = this.unit.stats.hp;
+
+            if (this.unit.stats.hp <= 0) {
+                // Remove from game (set invisible and clear from grid)
+                console.log(this.name + ' is dead!');
+                this.visible = false;
+                game.grid[this.y][this.x].unit = 0;
+            }
+        }
     }
 
     flip() {
@@ -54,7 +79,7 @@ export default class HealthBar {
         this.healthbar.lineTo(50 * curHP / totalHP, -5);
         this.healthbar.endFill();
 
-        // this.stats._lasthp = curHP;
+        // this.unit.stats.lasthp = curHP;
         this.healthbarText.text = curHP;
     }
 }

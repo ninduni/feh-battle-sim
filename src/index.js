@@ -164,7 +164,7 @@ class Game extends Phaser.Game {
     }
 }
 
-var game = new Game();
+export const game = new Game();
 window.game = game;
 // window.skillInfo = skillInfo;
 

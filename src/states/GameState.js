@@ -41,9 +41,9 @@ class GameState extends Phaser.State {
 
         // Add units
         this.game.units = {};
-        this.game.unitsGroup = this.game.add.group();
+        // this.game.unitsGroup = this.game.add.group();
 
-        let anna = new Unit({game: this.game, gridX: 1, gridY: 6,
+        let anna = new Unit({gridX: 1, gridY: 6,
                              movementType: 'Infantry',
                              weapon: 'Silver Axe',
                              asset: 'anna',
@@ -56,10 +56,10 @@ class GameState extends Phaser.State {
         this.game.units[anna.id] = anna;
         this.game.setSpecial(anna.id, 'Rising Light');
         // anna.updateSpecCD(0);
-        this.game.unitsGroup.add(anna);
+        // this.game.unitsGroup.add(anna);
         anna.stats = _.extend(anna.stats, { hp: 41, totalhp: 41, atk: 45, spd: 38, def: 22, res: 28 });
 
-        let zach = new Unit({game: this.game, gridX: 2, gridY: 6,
+        let zach = new Unit({gridX: 2, gridY: 6,
                              movementType: 'Cavalry',
                              weapon: 'Thoron',
                              asset: 'zach',
@@ -68,10 +68,10 @@ class GameState extends Phaser.State {
         this.game.zach = zach;
         this.game.grid[6][2].unit = zach.id;
         this.game.units[zach.id] = zach;
-        this.game.unitsGroup.add(zach);
+        // this.game.unitsGroup.add(zach);
         zach.stats = _.extend(zach.stats, { hp: 35, totalhp:35, atk: 39, spd: 32, def: 19, res: 30 });
 
-        let draug = new Unit({game: this.game, gridX: 3, gridY: 4,
+        let draug = new Unit({gridX: 3, gridY: 4,
                              movementType: 'Armor',
                              weapon: 'Brave Sword',
                              asset: 'draug',
@@ -80,10 +80,10 @@ class GameState extends Phaser.State {
         this.game.draug = draug;
         this.game.grid[4][3].unit = draug.id;
         this.game.units[draug.id] = draug;
-        this.game.unitsGroup.add(draug);
+        // this.game.unitsGroup.add(draug);
         draug.stats = _.extend(draug.stats, { hp: 50, totalhp: 50, atk: 38, spd: 27, def: 39, res: 18 });
 
-        let caeda = new Unit({game: this.game, gridX: 2, gridY: 5,
+        let caeda = new Unit({gridX: 2, gridY: 5,
                              movementType: 'Flying',
                              weapon: 'Armorslayer+',
                              asset: 'caeda',
@@ -92,7 +92,7 @@ class GameState extends Phaser.State {
         this.game.caeda = caeda;
         this.game.grid[5][2].unit = caeda.id;
         this.game.units[caeda.id] = caeda;
-        this.game.unitsGroup.add(caeda);
+        // this.game.unitsGroup.add(caeda);
         caeda.stats = _.extend(caeda.stats, { hp: 36, totalhp: 36, atk: 37, spd: 37, def: 24, res: 34 });
 
 
