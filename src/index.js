@@ -35,7 +35,12 @@ class Game extends Phaser.Game {
             aoeDmgString = battleResult.aoeDmgToTarget + '+';
         }
         $('#attacker-dmg-strike').text(aoeDmgString + battleResult.attackerDmg);
-        $('#defender-dmg-strike').text(battleResult.defenderDmg);
+        // Only display defender damage if they can counter
+        if (battleResult.defenderMult >= 1) {
+            $('#defender-dmg-strike').text(battleResult.defenderDmg);
+        } else {
+            $('#defender-dmg-strike').text('--');
+        }
         // Only display multipliers if they're relevant
         if (battleResult.attackerMult > 1) $('#attacker-dmg-mult').text('x ' + battleResult.attackerMult);
         if (battleResult.defenderMult > 1) $('#defender-dmg-mult').text('x ' + battleResult.defenderMult);
@@ -103,8 +108,8 @@ class Game extends Phaser.Game {
         $('#c-skill').val(unit.passiveC || '');
     }
 
-    getStats(char) {
-        return this.units[char] || {};
+    getStats(unitID) {
+        return this.units[unitID] || {};
     }
 
     updateTurnHistory() {
@@ -115,12 +120,12 @@ class Game extends Phaser.Game {
         });
     }
 
-    setMap(mapID) {
-        this.map.frame = mapID;
+    setMap(mapunitID) {
+        this.map.frame = mapunitID;
     }
 
-    setStats({ char, hp, atk, spd, def, res }) {
-        var unit = this.units[char];
+    setStats({ unitID, hp, atk, spd, def, res }) {
+        var unit = this.units[unitID];
         unit.stats.totalhp = parseInt(hp);
         unit.stats.hp = parseInt(hp);
         unit.stats.atk = parseInt(atk);
@@ -130,35 +135,24 @@ class Game extends Phaser.Game {
         unit.updateHP();
     }
 
-    setType(char, type) {
-        var unit = this.units[char];
-        unit.type = type;
-        unit.typeIcon.frameName = type;
-        unit.weapon = null; // Unset weapon
+    setType(unitID, type) {
+        this.units[unitID].type = type;
     }
 
-    setWeapon(char, weapon) {
-        var unit = this.units[char];
-        unit.weapon = weapon;
-        unit.weaponData = weaponInfo[weapon];
-        unit.color = unit.weaponData.color;
+    setWeapon(unitID, weapon) {
+        this.units[unitID].weapon = weapon;
     }
 
-    setSpecial(char, special) {
-        var unit = this.units[char];
-        unit.special = special;
-        unit.specialData = specInfo[special] || {};
-        unit.updateSpecCD(unit.specialData.cooldown);
+    setSpecial(unitID, special) {
+        this.units[unitID].special = special;
     }
 
-    setAssist(char, assist) {
-        var unit = this.units[char];
-        unit.assist = assist;
-        unit.assistData = assistInfo[assist] || {};
+    setAssist(unitID, assist) {
+        this.units[unitID].assist = assist;
     }
 
-    setSkill(char, skill, slot) {
-        var unit = this.units[char];
+    setSkill(unitID, skill, slot) {
+        var unit = this.units[unitID];
         unit['passive' + slot] = skill;
         unit['passive' + slot + 'Data'] = skillInfo[slot.toLowerCase()][skill] || {};
     }

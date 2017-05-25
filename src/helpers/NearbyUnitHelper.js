@@ -8,7 +8,7 @@ export function damageNearbyUnits({game, attacker, defender, aoeAtk, aoeMod, mag
     // Get a list of units to damage based off the pattern provided
     let unitList = [];
     pattern.forEach(([x, y]) => {
-        let [gridX, gridY] = [toGrid(defender.x) + x, toGrid(defender.y) + y];
+        let [gridX, gridY] = [defender.x + x, defender.y + y];
         if (isOutsideGrid(game, gridX, gridY)) return;
 
         let unitID = game.grid[gridY][gridX].unit;
@@ -43,7 +43,7 @@ function outOfCombatMit(attacker, defender) {
 export function flatDamageNearbyUnits({game, attacker, target, range, dmg}) {
     // Get a list of units to damage based off the pattern provided
     let unitList = [];
-    let pairs = utils.pairsWithinNSpaces(toGrid(target.x), toGrid(target.y), game.maxGridX, game.maxGridY, range);
+    let pairs = utils.pairsWithinNSpaces(target.x, target.y, game.maxGridX, game.maxGridY, range);
     pairs.forEach(({x: x, y: y}) => {
         let unitID = game.grid[y][x].unit;
         if (unitID !== 0) {
@@ -63,8 +63,7 @@ export function flatDamageNearbyUnits({game, attacker, target, range, dmg}) {
 export function healNearbyUnits({game, healer, healerPos, range, healAmt}) {
     // Get a list of units to damage based off the pattern provided
     let unitList = [];
-    let pairs = utils.pairsWithinNSpaces(toGrid(healerPos.x), toGrid(healerPos.y), game.maxGridX,
-                                         game.maxGridY, range);
+    let pairs = utils.pairsWithinNSpaces(healerPos.x, healerPos.y, game.maxGridX, game.maxGridY, range);
     pairs.forEach(({x: x, y: y}) => {
         let unitID = game.grid[y][x].unit;
         if (unitID === 0 || unitID === healer.id) return;
@@ -94,9 +93,7 @@ export function getNearbyHoneBuffs(game, receiver) {
         if (!unit.passiveCData.hasOwnProperty("hone")) return;
         // Break if we don't pass filters
         if ((unit.passiveCData.hasOwnProperty("move_unique") && receiver.movement_type !== unit.passiveCData.move_unique) ||
-            (unit.passiveCData.hasOwnProperty("dragon_unique") &&
-             !(defender.type === "redDragon" || defender.type === "greenDragon" || defender.type === "blueDragon")
-           )) {
+            (unit.passiveCData.hasOwnProperty("dragon_unique") && !defender.isDragon)) {
             return;
         }
         // Break if the receiver is too far from the buff giver
@@ -184,9 +181,7 @@ export function getNearbySpurBuffs(game, receiver, receiverPos=null) {
         if (!unit.passiveCData.hasOwnProperty("spur")) return;
         // Break if we don't pass filters
         if ((unit.passiveCData.hasOwnProperty("move_unique") && receiver.movement_type !== unit.passiveCData.move_unique) ||
-            (unit.passiveCData.hasOwnProperty("dragon_unique") &&
-             !(defender.type === "redDragon" || defender.type === "greenDragon" || defender.type === "blueDragon")
-           )) {
+            (unit.passiveCData.hasOwnProperty("dragon_unique") && !defender.isDragon)) {
             return;
         }
         // Break if the receiver is too far from the buff giver
@@ -217,14 +212,6 @@ function isOutsideGrid(game, gridX, gridY) {
     return (gridX < 0 || gridX >= game.maxGridX || gridY < 0 || gridY >= game.maxGridY);
 }
 
-function toGrid(i) {
-    return Math.floor(i / 90);
-}
-
-function fromGrid(i) {
-    return (i * 90) + 45;
-}
-
 function distance(unitA, unitB) {
-    return Math.abs(toGrid(unitA.x) - toGrid(unitB.x)) + Math.abs(toGrid(unitA.y) - toGrid(unitB.y));
+    return Math.abs(unitA.x - unitB.x) + Math.abs(unitA.y - unitB.y);
 }

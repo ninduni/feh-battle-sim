@@ -31,13 +31,13 @@ export class MoveAssistHelper {
         // Assister pulls the target back one space
         let vec = utils.movementVector(this.assistPos, this.target, true);
         let assisterDestPos = {
-            x: utils.toGrid(this.assistPos.x) + vec.x,
-            y: utils.toGrid(this.assistPos.y) + vec.y
+            x: this.assistPos.x + vec.x,
+            y: this.assistPos.y + vec.y
         };
         let assisterDest = this.game.grid[assisterDestPos.y][assisterDestPos.x];
         let targetDestPos = {
-            x: utils.toGrid(this.assistPos.x),
-            y: utils.toGrid(this.assistPos.y)
+            x: this.assistPos.x,
+            y: this.assistPos.y
         };
         let targetDest = this.game.grid[targetDestPos.y][targetDestPos.x];
 
@@ -47,8 +47,8 @@ export class MoveAssistHelper {
         if ( utils.isMovable(this.assister, assisterDest) &&
              utils.isMovable(this.target, targetDest, true) ) {
 
-            this.setUnitPos(this.assister, assisterDest);
-            this.setUnitPos(this.target, targetDest);
+            this.assister.setUnitPos(assisterDest);
+            this.target.setUnitPos(targetDest);
             return true;
         } else {
             return false;
@@ -59,13 +59,13 @@ export class MoveAssistHelper {
         // Moves the assister to the space on the other side of the target
         let vec = utils.movementVector(this.assistPos, this.target, false);
         let assisterDestPos = {
-            x: utils.toGrid(this.target.x) + vec.x,
-            y: utils.toGrid(this.target.y) + vec.y
+            x: this.target.x + vec.x,
+            y: this.target.y + vec.y
         };
         let assisterDest = this.game.grid[assisterDestPos.y][assisterDestPos.x];
 
         if (utils.isMovable(this.assister, assisterDest)) {
-            this.setUnitPos(this.assister, assisterDest);
+            this.assister.setUnitPos(assisterDest);
             return true;
         } else {
             return false;
@@ -76,13 +76,13 @@ export class MoveAssistHelper {
         // Suplex the target
         let vec = utils.movementVector(this.assistPos, this.target, true);
         let targetDestPos = {
-            x: utils.toGrid(this.assistPos.x) + vec.x,
-            y: utils.toGrid(this.assistPos.y) + vec.y
+            x: this.assistPos.x + vec.x,
+            y: this.assistPos.y + vec.y
         };
         let targetDest = this.game.grid[targetDestPos.y][targetDestPos.x];
 
         if (utils.isMovable(this.target, targetDest)) {
-            this.setUnitPos(this.target, targetDest);
+            this.target.setUnitPos(targetDest);
         }
         return false;
     }
@@ -93,14 +93,14 @@ export class MoveAssistHelper {
         let vec = utils.movementVector(this.assistPos, this.target, false);
 
         let targetDestPos = {
-            x: utils.toGrid(this.target.x) + vec.x,
-            y: utils.toGrid(this.target.y) + vec.y
+            x: this.target.x + vec.x,
+            y: this.target.y + vec.y
         };
         let targetDest = this.game.grid[targetDestPos.y][targetDestPos.x];
 
         let targetDestPos2Squares = {
-            x: utils.toGrid(this.target.x) + (2 * vec.x),
-            y: utils.toGrid(this.target.y) + (2 * vec.y)
+            x: this.target.x + (2 * vec.x),
+            y: this.target.y + (2 * vec.y)
         };
         let targetDest2Squares = this.game.grid[targetDestPos2Squares.y][targetDestPos2Squares.x];
 
@@ -109,11 +109,11 @@ export class MoveAssistHelper {
 
         // If the second space is not a wall, move to it if it is movable
         if (utils.isMovable(this.target, targetDest2Squares)) {
-            this.setUnitPos(this.target, targetDest2Squares);
+            this.target.setUnitPos(targetDest2Squares);
         }
         // Otherwise, move to the first space if it is movable
         else if (utils.isMovable(this.target, targetDest)) {
-            this.setUnitPos(this.target, targetDest);
+            this.target.setUnitPos(targetDest);
         }
 
         return false;
@@ -123,34 +123,28 @@ export class MoveAssistHelper {
         // Pushes the target one space along the vector between the assister and the target
         let vec = utils.movementVector(this.assistPos, this.target, false);
         let targetDestPos = {
-            x: utils.toGrid(this.target.x) + vec.x,
-            y: utils.toGrid(this.target.y) + vec.y
+            x: this.target.x + vec.x,
+            y: this.target.y + vec.y
         };
         let targetDest = this.game.grid[targetDestPos.y][targetDestPos.x];
         if (utils.isMovable(this.target, targetDest)) {
-            this.setUnitPos(this.target, targetDest);
+            this.target.setUnitPos(targetDest);
         }
         return false;
     }
 
     swap() {
         // Set the target's position to the unit's, and the unit's to the target's
-        let assisterDest = this.game.grid[utils.toGrid(this.target.y)][utils.toGrid(this.target.x)];
-        let targetDest = this.game.grid[utils.toGrid(this.assistPos.y)][utils.toGrid(this.assistPos.x)];
+        let assisterDest = this.game.grid[this.target.y][this.target.x];
+        let targetDest = this.game.grid[this.assistPos.y][this.assistPos.x];
 
         if ( utils.isMovable(this.assister, assisterDest, true) &&
              utils.isMovable(this.target, targetDest, true) ) {
-            this.setUnitPos(this.assister, assisterDest);
-            this.setUnitPos(this.target, targetDest);
+            this.assister.setUnitPos(assisterDest);
+            this.target.setUnitPos(targetDest);
             return true;
         } else {
             return false;
         }
-    }
-
-    setUnitPos(unit, gridPoint) {
-        unit.x = utils.fromGrid(gridPoint.x);
-        unit.y = utils.fromGrid(gridPoint.y);
-        unit.updateUnitPosition();
     }
 }

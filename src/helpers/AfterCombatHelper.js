@@ -31,55 +31,45 @@ export function afterCombatMovement({game, attacker, attackPos, target}) {
     if (attacker.passiveB === "Hit and Run") {
         // Attacker want's to back away from target by one space, if it is valid terrain
         let vec = utils.movementVector(attackPos, target, true);
-        let attackerDestPos = {x: utils.toGrid(attackPos.x) + vec.x, y: utils.toGrid(attackPos.y) + vec.y};
+        let attackerDestPos = {x: attackPos.x + vec.x, y: attackPos.y + vec.y};
         // Check whether the destination is movable by this unit and is free
         let attackerDest = game.grid[attackerDestPos.y][attackerDestPos.x];
         if (utils.isMovable(attacker, attackerDest)) {
-            attacker.x = utils.fromGrid(attackerDest.x);
-            attacker.y = utils.fromGrid(attackerDest.y);
+            attacker.setUnitPos(attackerDest);
             return true;
         }
     } else if (attacker.passiveB === "Drag Back") {
         // Attacker want's to back away from target by one space, if it is valid terrain
         let vec = utils.movementVector(attackPos, target, true);
-        let attackerDestPos = {x: utils.toGrid(attackPos.x) + vec.x, y: utils.toGrid(attackPos.y) + vec.y};
+        let attackerDestPos = {x: attackPos.x + vec.x, y: attackPos.y + vec.y};
         // Check whether the destination is movable by this unit and is free
         let attackerDest = game.grid[attackerDestPos.y][attackerDestPos.x];
         let unitMoved = false;
         if (utils.isMovable(attacker, attackerDest)) {
-            attacker.x = utils.fromGrid(attackerDest.x);
-            attacker.y = utils.fromGrid(attackerDest.y);
+            attacker.setUnitPos(attackerDest);
             unitMoved = true;
         }
 
         // Target will move into attacker's space, if it is valid, if alive
-        let targetDestPos = {x: utils.toGrid(attackPos.x), y: utils.toGrid(attackPos.y)};
+        let targetDestPos = {x: attackPos.x, y: attackPos.y};
         let targetDest = game.grid[targetDestPos.y][targetDestPos.x];
         if (utils.isMovable(target, targetDest) && target.stats.hp > 0) {
-            target.x = utils.fromGrid(targetDest.x);
-            target.y = utils.fromGrid(targetDest.y);
-            target.updateUnitPosition();
+            target.setUnitPos(targetDest);
         }
         return unitMoved;
     } else if (attacker.passiveB === "Lunge") {
         // Attacker and target switch spots, but only if both have a valid move,
         // or if attacker has a valid move and target is dead
-        let attackerDestPos = {x: utils.toGrid(target.x), y: utils.toGrid(target.y)};
-        let targetDestPos = {x: utils.toGrid(attackPos.x), y: utils.toGrid(attackPos.y)};
-
-        let attackerDest = game.grid[attackerDestPos.y][attackerDestPos.x];
-        let targetDest = game.grid[targetDestPos.y][targetDestPos.x];
+        let attackerDest = game.grid[target.y][target.x];
+        let targetDest = game.grid[attackPos.y][attackPos.x];
         if ( ( utils.isMovable(attacker, attackerDest, true) &&
                utils.isMovable(target, targetDest, true) &&
                target.stats.hp > 0 ) ||
              ( utils.isMovable(attacker, attackerDest, true) && target.stats.hp <= 0) ) {
-            attacker.x = utils.fromGrid(attackerDest.x);
-            attacker.y = utils.fromGrid(attackerDest.y);
+            attacker.setUnitPos(attackerDest);
 
             if (target.stats.hp > 0) {
-                target.x = utils.fromGrid(targetDest.x);
-                target.y = utils.fromGrid(targetDest.y);
-                target.updateUnitPosition();
+                target.setUnitPos(targetDest);
             }
 
             return true;
@@ -87,12 +77,10 @@ export function afterCombatMovement({game, attacker, attackPos, target}) {
     } else if (attacker.passiveB === "Knock Back" && target.stats.hp > 0) {
         let vec = utils.movementVector(attackPos, target, false);
         // Target will move one space back, if it is valid, if alive
-        let targetDestPos = {x: utils.toGrid(target.x) + vec.x, y: utils.toGrid(target.y) + vec.y};
+        let targetDestPos = {x: target.x + vec.x, y: target.y + vec.y};
         let targetDest = game.grid[targetDestPos.y][targetDestPos.x];
         if (utils.isMovable(target, targetDest)) {
-            target.x = utils.fromGrid(targetDest.x);
-            target.y = utils.fromGrid(targetDest.y);
-            target.updateUnitPosition();
+            target.setUnitPos(targetDest);
         }
     }
     return false;

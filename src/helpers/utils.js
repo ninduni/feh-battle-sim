@@ -74,25 +74,6 @@ export function gridFromList(list, maxX, maxY) {
 	return grid;
 }
 
-export function attackRangeLookup(weaponType) {
-	switch(weaponType) {
-		case 'sword':
-		case 'axe':
-		case 'lance':
-		case 'redDragon':
-		case 'blueDragon':
-		case 'greenDragon':
-			return 1;
-		case 'bow':
-		case 'dagger':
-		case 'redTome':
-		case 'blueTome':
-		case 'greenTome':
-		case 'staff':
-			return 2;
-	}
-}
-
 // rounds numbers up or down, rounds to closest int if the difference is less than 0.01
 // unrounded is the number to round, roundUp is true if we need to round up
 export function roundNum(unrounded, roundUp) {

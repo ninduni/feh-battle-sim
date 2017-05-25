@@ -39,6 +39,11 @@ export default class MoveComponent extends Phaser.Sprite {
         this.game.stage.addChild(this);
     }
 
+    flip() {
+        // Mirrors the sprite
+        this.scale.x = -1;
+    }
+
     setMovementType(type) {
         this.movementType = type;
 
@@ -66,15 +71,6 @@ export default class MoveComponent extends Phaser.Sprite {
             game.pathfinder.setTileCost(key, value);
         });
     }
-
-    setAttackRange(range) {
-        this.attackRange = range;
-    }
-
-    setAssistRange(range) {
-        this.assistRange = range;
-    }
-
 
     onDragStart() {
         // Can't drag if not your turn
@@ -156,7 +152,7 @@ export default class MoveComponent extends Phaser.Sprite {
 
         // If we attacked, assisted, or moved, we need to update the unit's position in the grid, then end the turn
         this.updateUnitPosition();
-
+        console.log(this.validAttacks);
         // Possible GC help?
         this.validEndPositons = null;
         this.validMoves = null;
@@ -212,6 +208,7 @@ export default class MoveComponent extends Phaser.Sprite {
 
                 // Check if we're over an enemy and draw combat stats
                 var attackPos = this.getAttackPos();
+                console.log(attackPos);
                 if (attackPos !== null) {
                     var target = game.units[hoverUnit];
 
@@ -362,7 +359,7 @@ export default class MoveComponent extends Phaser.Sprite {
         // We can end in any space we can move to, but not those occupied by units (self is ok)
         var endPositions = [];
         moves.forEach((move) => {
-            if (game.grid[move.y][move.x].unit === 0 || game.grid[move.y][move.x].unit === this.id) {
+            if (game.grid[move.y][move.x].unit === 0 || game.grid[move.y][move.x].unit === this.unit.id) {
                 endPositions.push({x: move.x, y: move.y});
             }
         });

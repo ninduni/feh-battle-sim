@@ -1,7 +1,7 @@
 import { game } from 'index';
 
 export default class SpriteUI extends Phaser.Group {
-    constructor(unit, isFriendly, hp) {
+    constructor(unit, isFriendly, type) {
         super(game);
 
         this.unit = unit;
@@ -18,41 +18,38 @@ export default class SpriteUI extends Phaser.Group {
         this.background.moveTo(0,-5);
         this.background.lineTo(51, -5);
         this.background.endFill();
-
-        // sprite.addChild(this.background);
         this.addChild(this.background);
 
+        // Healthbar
         this.healthbar = game.add.graphics(-25, 40);
         this.healthbar.anchor.setTo(0.5);
-
-        // sprite.addChild(this.healthbar);
         this.addChild(this.healthbar);
 
         // Health text
         var style = { font: "12px Arial", fill: "#ffffff", align: "left",
                       stroke: "#000000", strokeThickness: 2 };
-        // this.healthbarText = game.add.text(-35, 37, this.unit.stats.hp, style);
         var font = (isFriendly) ? 'bluefont' : 'redfont';
-        this.healthbarText = game.add.bitmapText(-35, 25, font, hp, 30);
+        this.healthbarText = game.add.bitmapText(-35, 25, font, this.unit.stats.hp, 30);
         this.healthbarText.anchor.setTo(0.5);
-
-        // sprite.addChild(this.healthbarText);
         this.addChild(this.healthbarText);
+
+        // Type Icon
+        this.typeIcon = game.add.sprite(-35, -35, 'types', this.unit.type);
+        this.typeIcon.anchor.setTo(0.5);
+        this.typeIcon.scale.setTo(0.5);
+        this.addChild(this.typeIcon);
+
+        // Special counter icon
+        this.specialText = game.add.bitmapText(-35, -20, 'special', this.unit.specCurrCooldown, 30);
+        this.specialText.anchor.setTo(0.5);
+        this.addChild(this.specialText);
     }
 
     update() {
         // Detects HP changes on the unit and redraws the healthbar
         if (this.lasthp !== this.unit.stats.hp) {
-            console.log(this.unit.stats.hp, this.lasthp);
             this.redraw(this.unit.stats.hp, this.unit.stats.totalhp);
             this.lasthp = this.unit.stats.hp;
-
-            if (this.unit.stats.hp <= 0) {
-                // Remove from game (set invisible and clear from grid)
-                console.log(this.name + ' is dead!');
-                this.visible = false;
-                game.grid[this.y][this.x].unit = 0;
-            }
         }
     }
 
@@ -66,6 +63,9 @@ export default class SpriteUI extends Phaser.Group {
 
         this.background.scale.x = -1;
         this.background.x *= -1;
+
+        this.typeIcon.scale.x = -0.5;
+        this.specialText.scale.x = -1;
     }
 
     redraw(curHP, totalHP) {

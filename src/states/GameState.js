@@ -50,13 +50,10 @@ class GameState extends Phaser.State {
                              type: 'axe',
                              id: 1});
         anna.assist = 'Swap';
-        anna.assistData = assistInfo[anna.assist];
+        anna.special = 'Rising Light';
         this.game.anna = anna;
         this.game.grid[6][1].unit = anna.id;
         this.game.units[anna.id] = anna;
-        this.game.setSpecial(anna.id, 'Rising Light');
-        // anna.updateSpecCD(0);
-        // this.game.unitsGroup.add(anna);
         anna.stats = _.extend(anna.stats, { hp: 41, totalhp: 41, atk: 45, spd: 38, def: 22, res: 28 });
 
         let zach = new Unit({gridX: 2, gridY: 6,
@@ -68,7 +65,6 @@ class GameState extends Phaser.State {
         this.game.zach = zach;
         this.game.grid[6][2].unit = zach.id;
         this.game.units[zach.id] = zach;
-        // this.game.unitsGroup.add(zach);
         zach.stats = _.extend(zach.stats, { hp: 35, totalhp:35, atk: 39, spd: 32, def: 19, res: 30 });
 
         let draug = new Unit({gridX: 3, gridY: 4,
@@ -80,7 +76,6 @@ class GameState extends Phaser.State {
         this.game.draug = draug;
         this.game.grid[4][3].unit = draug.id;
         this.game.units[draug.id] = draug;
-        // this.game.unitsGroup.add(draug);
         draug.stats = _.extend(draug.stats, { hp: 50, totalhp: 50, atk: 38, spd: 27, def: 39, res: 18 });
 
         let caeda = new Unit({gridX: 2, gridY: 5,
@@ -92,7 +87,6 @@ class GameState extends Phaser.State {
         this.game.caeda = caeda;
         this.game.grid[5][2].unit = caeda.id;
         this.game.units[caeda.id] = caeda;
-        // this.game.unitsGroup.add(caeda);
         caeda.stats = _.extend(caeda.stats, { hp: 36, totalhp: 36, atk: 37, spd: 37, def: 24, res: 34 });
 
 
@@ -125,8 +119,8 @@ class GameState extends Phaser.State {
 
     endTurn() {
         this.game.isFriendlyTurn = !this.game.isFriendlyTurn;
-        var banner = (this.game.isFriendlyTurn) ? this.game.playerPhaseBanner : this.game.enemyPhaseBanner;
-
+        let banner = (this.game.isFriendlyTurn) ? this.game.playerPhaseBanner : this.game.enemyPhaseBanner;
+        banner.bringToTop();
         // Show phase change banner
         this.game.add.tween(banner).to( { alpha: 1 }, 750, Phaser.Easing.Exponential.Out, true, 0, 0, true);
 

@@ -5,10 +5,11 @@ import * as NearbyUnitHelper from 'helpers/NearbyUnitHelper';
 import * as AfterCombatHelper from 'helpers/AfterCombatHelper';
 import { runAssist } from 'helpers/AssistHelper';
 // import { BattleCalc } from 'helpers/BattleCalculator';
+import { typeInfo } from 'skills/types';
 import { assistInfo } from 'skills/assist';
 import { weaponInfo } from 'skills/weapon';
 import { specInfo } from 'skills/special';
-import SpriteUI from 'objects/HealthBar';
+import SpriteUI from 'objects/SpriteUI';
 import MoveComponent from 'components/MoveComponent';
 
 export default class Unit {
@@ -20,38 +21,34 @@ export default class Unit {
     constructor({gridX, gridY, movementType, weapon, asset, type, id}) {
         this.name = asset; // Not unique!
         this.id = id;
-        this.movementType = movementType;
-        this.assistRange = 1;
-        this.type = type;
-
-        // Move into a grid space after adjusting anchor point
         this.x = this.lastX = gridX;
         this.y = this.lastY = gridY;
 
+
         // Set up stats
         this.stats = {
-            hp: 10,
-            atk: 0,
-            spd: 0,
-            def: 0,
-            res: 0,
+            // Base stats
+            hp: 10, atk: 0, spd: 0, def: 0, res: 0,
             // Tracks "hone" or visible bonuses, only one of which can be active at a time
-            honeAtk: 0,
-            honeSpd: 0,
-            honeDef: 0,
-            honeRes: 0,
+            honeAtk: 0, honeSpd: 0, honeDef: 0, honeRes: 0,
             // Tracks penalties from threaten
-            threatenAtk: 0,
-            threatenSpd: 0,
-            threatenDef: 0,
-            threatenRes: 0,
+            threatenAtk: 0, threatenSpd: 0, threatenDef: 0, threatenRes: 0,
             // Tracks in-combat bonuses (spur, initiate/defend bonuses)
-            spurAtk: 0,
-            spurSpd: 0,
-            spurDef: 0,
-            spurRes: 0
+            spurAtk: 0, spurSpd: 0, spurDef: 0, spurRes: 0
         };
         this.stats.totalhp = this.stats.hp;
+
+        // Movement component is also the visual component
+        this.sprite = new MoveComponent(this, asset, gridX, gridY);
+        game.world.addChild(this.sprite);
+
+        // Creates the healthbar object, which will individually add all components as children of this unit
+        this.spriteUI = new SpriteUI(this, this.isFriendly());
+        this.sprite.addChild(this.spriteUI);
+
+        // Set up type and movement type
+        this.movementType = movementType;
+        this.type = type; // This will set the color
 
         // Set up skills
         this.passiveA = null;
@@ -63,59 +60,105 @@ export default class Unit {
 
         // Weapon
         this.weapon = weapon;
-        this.weaponData = weaponInfo[weapon];
-        this.color = this.weaponData.color;
-
         // Assist
-        this.assist = null;
-        this.assistData = assistInfo[this.assist] || {};
-
+        this.assist = '';
         // Special
-        this.special = null;
-        this.specialData = specInfo[special] || {};
-        this.specCurrCooldown = this.specialData.cooldown;
+        this.special = '';
 
         // Bookkeeping
         this.dead = false;
         this.turnEnded = false;
 
-        // Movement component is also the visual component
-        this.sprite = new MoveComponent(this, asset, gridX, gridY);
-        game.world.addChild(this.sprite);
-        this.sprite.setMovementType(movementType);
-        this.sprite.setAttackRange(this.weaponData.range || 0);
-        this.sprite.setAssistRange(this.assistData.range || 0);
-
-
-        // Creates the healthbar object, which will individually add all components as children of this unit
-        this.spriteUI = new SpriteUI(this, this.isFriendly(), this.stats.hp);
-        game.add.existing(this.spriteUI);
-        this.sprite.addChild(this.spriteUI);
-
-        // Type Icon
-        this.typeIcon = game.add.sprite(-35, -35, 'types', this.type);
-        this.typeIcon.anchor.setTo(0.5);
-        this.typeIcon.scale.setTo(0.5);
-        this.sprite.addChild(this.typeIcon);
-
-        // Special counter icon
-        this.specialText = game.add.bitmapText(-35, -20, 'special', this.specCurrCooldown, 30);
-        this.specialText.anchor.setTo(0.5);
-        this.sprite.addChild(this.specialText);
-
         // Flip unit horizontally if on enemy team
         if (!this.isFriendly()) {
-            this.sprite.scale.x = -1;
+            this.sprite.flip();
             this.spriteUI.flip();
-            this.typeIcon.scale.x = -0.5;
-
-            this.specialText.scale.x = -1;
-            // this.specialText.x *= -1;
         }
     }
 
-    setUnitPos(x, y) {
-        this.sprite.setUnitPos(x, y);
+    get type() {
+        return this.typeName;
+    }
+    set type(typeName) {
+        this.typeName = typeName;
+        this.typeData = typeInfo[typeName];
+        this.color = this.typeData.color;
+        this.isDragon = this.typeData.hasOwnProperty('dragon');
+        this.spriteUI.typeIcon.frameName = typeName;
+        this.weapon = null; // Clear weapon when type changes
+    }
+
+    get movementType() {
+        return this.movementTypeName;
+    }
+    set movementType(moveType) {
+        this.movementTypeName = moveType;
+        this.sprite.setMovementType(moveType);
+    }
+
+    get weapon() {
+        return this.weaponName;
+    }
+    set weapon(weapName) {
+        this.weaponName = weapName;
+        if (weaponInfo.hasOwnProperty(weapName)) {
+            this.weaponData = weaponInfo[weapName];
+            this.attackRange = this.weaponData.range || 1;
+            this.sprite.attackRange = this.attackRange;
+        } else {
+            this.weaponData = {};
+            this.attackRange = 0;
+            this.sprite.attackRange = 0;
+        }
+
+        // Re-set special to factor in cooldown modifiers
+        this.special = this.special;
+    }
+
+    get assist() {
+        return this.assistName;
+    }
+    set assist(assistName) {
+        this.assistName = assistName;
+        if (assistInfo.hasOwnProperty(assistName)) {
+            this.assistData = assistInfo[assistName];
+            this.assistRange = this.assistData.range || 1;
+            this.sprite.assistRange = this.assistRange;
+        } else {
+            this.assistData = {};
+            this.assistRange = 0;
+            this.sprite.assistRange = 0;
+        }
+
+        // Re-set special to factor in cooldown modifiers
+        this.special = this.special;
+    }
+
+    get special() {
+        return this.specialName;
+    }
+    set special(specName) {
+        this.specialName = specName;
+        this.specialData = specInfo[specName] || {};
+        this.specCurrCooldown = this.specialData.cooldown;
+        // When setting a new special, modify special CD based on existing weapon
+        if (this.weaponData.hasOwnProperty('spec_cooldown_mod')) {
+            this.specCurrCooldown += this.weaponData.spec_cooldown_mod;
+        }
+        this.updateSpecCD(this.specCurrCooldown);
+    }
+    updateSpecCD(cd) {
+        this.specCurrCooldown = cd;
+        if (cd === undefined) {
+            this.spriteUI.specialText.text = '';
+        } else {
+            this.spriteUI.specialText.text = cd;
+        }
+
+    }
+
+    setUnitPos(pos) {
+        this.sprite.setUnitPos(pos.x, pos.y);
     }
 
     updateUnitPosition() {
@@ -185,16 +228,6 @@ export default class Unit {
         // Grey out the sprite
         this.sprite.tint = 0x888888;
         this.sprite.input.disableDrag();
-    }
-
-    updateSpecCD(cd) {
-        this.specCurrCooldown = cd;
-        if (cd === undefined) {
-            this.specialText.text = '';
-        } else {
-            this.specialText.text = cd;
-        }
-
     }
 
     clearBattleText() {
@@ -275,6 +308,20 @@ export default class Unit {
         } else {
             return false;
         }
+
+        // Mark either this unit or the target as dead
+        if (this.stats.hp <= 0) {
+            this.die();
+        }
+        if (target.stats.hp <= 0) {
+            target.die();
+        }
+    }
+
+    die() {
+        console.log(this.unit.name + ' is dead!');
+        this.sprite.visible = false;
+        game.grid[this.y][this.x].unit = 0;
     }
 
     doAssist(target, assistPos) {

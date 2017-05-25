@@ -306,8 +306,7 @@ class BC2 {
             }
         }
         // super effectiveness against dragons
-        if (attacker.weaponData.hasOwnProperty("dragon_effective") &&
-                (defender.type === "redDragon" || defender.type === "greenDragon" || defender.type === "blueDragon")) {
+        if (attacker.weaponData.hasOwnProperty("dragon_effective") && defender.isDragon) {
             if (!defender.passiveAData.hasOwnProperty("cancel_effective")) {
                 mult = mult * 1.5;
             }
