@@ -1,15 +1,15 @@
 import { game } from 'index';
 import * as utils from 'helpers/utils';
-import { BattleCalc } from 'helpers/BC2';
+import BattleCalc from 'helpers/BC2';
 import * as NearbyUnitHelper from 'helpers/NearbyUnitHelper';
 import * as AfterCombatHelper from 'helpers/AfterCombatHelper';
 import { runAssist } from 'helpers/AssistHelper';
-// import { BattleCalc } from 'helpers/BattleCalculator';
 import { typeInfo } from 'skills/types';
 import { assistInfo } from 'skills/assist';
 import { weaponInfo } from 'skills/weapon';
 import { specInfo } from 'skills/special';
 import SpriteUI from 'objects/SpriteUI';
+import Wall from 'objects/Wall';
 import MoveComponent from 'components/MoveComponent';
 
 export default class Unit {
@@ -235,6 +235,11 @@ export default class Unit {
     }
 
     dryRunAttack(target, attackPos) {
+        if (target instanceof Wall) {
+            game.displayBattleText(this, target, target.wallBattleResult(this));
+            return;
+        }
+
         // Calculate spur buffs on this unit and the target
         NearbyUnitHelper.getNearbySpurBuffs(game, this, attackPos);
         NearbyUnitHelper.getNearbySpurBuffs(game, target);
@@ -245,6 +250,12 @@ export default class Unit {
     }
 
     attack(target, attackPos) {
+        if (target instanceof Wall) {
+            // Just damage the wall, no need to fight it
+            target.damage();
+            return;
+        }
+
         // Calculate spur buffs on this unit and the target
         NearbyUnitHelper.getNearbySpurBuffs(game, this, attackPos);
         NearbyUnitHelper.getNearbySpurBuffs(game, target);
@@ -331,7 +342,10 @@ export default class Unit {
 
     isOpposingTeam(unitID) {
         // Checks another unit's id, and returns whether that unit is on the same team as this unit
-        // Returns false if
+        if (unitID >= 100) {
+            // This is a wall
+            return true;
+        }
         if (unitID === 0) {
             return null; // No unit in this square
         } else {
@@ -341,6 +355,10 @@ export default class Unit {
 
     isSameTeam(unitID) {
         // Returns true if unitID is on the same team as this unit (but not if we're comparing this unit to itself)
+        if (unitID >= 100) {
+            // This is a wall
+            return false;
+        }
         if (unitID === 0) {
             return null;
         } else {

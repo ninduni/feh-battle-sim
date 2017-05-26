@@ -15,6 +15,9 @@ export default class Tile {
             s = overlays.assistSelectorGroup.create(90 * x, 90 * y, 'selectors', 'selector-assist'),
             d = game.add.text(90 * x, 90 * y, '', style, overlays.debugGridGroup); // Mandatory for adding text to group
 
+        this.border = game.add.sprite(90 * x, 90 * y, 'border');
+        this.border.visible = false;
+
         r.visible = b.visible = g.visible = a.visible = m.visible = s.visible = d.visible = false;
         r.alpha = b.alpha = 0.5;
         a.alpha = m.alpha = s.alpha = 0.75;
@@ -44,11 +47,13 @@ export default class Tile {
         return this.terrain === 2;
     }
     isMountain() {
-        // No need to differentiate between mountain and water, but might be in future
         return this.terrain === 3;
     }
-    isFort() {
+    isWater() {
         return this.terrain === 4;
+    }
+    isFort() {
+        return this.terrain === 5;
     }
 
     showBlue() {

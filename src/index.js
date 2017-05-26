@@ -4,11 +4,9 @@ import { assistInfo } from 'skills/assist';
 import { weaponInfo } from 'skills/weapon';
 import { skillInfo } from 'skills/skills';
 import { specInfo } from 'skills/special';
-import { BattleCalc } from 'helpers/BattleCalculator';
 
 var _ = require('lodash');
 window._ = _;
-window.bc = BattleCalc;
 
 class Game extends Phaser.Game {
 

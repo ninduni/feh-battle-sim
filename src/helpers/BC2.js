@@ -2,8 +2,8 @@ import { game } from 'index';
 import { TurnOrderCalc } from 'helpers/TurnOrder';
 import * as utils from 'helpers/utils';
 
-class BC2 {
-    run(attacker, defender) {
+export default class BattleCalc {
+    static run(attacker, defender) {
         var result = this.dryRun(attacker, defender);
 
         // Set new HPs
@@ -14,7 +14,7 @@ class BC2 {
         return result;
     }
 
-    dryRun(attacker, defender) {
+    static dryRun(attacker, defender) {
         // This method handles all mutable things in a battle, like changing HP and cooldown timers
         // It builds a list of attacks, then runs through them in sequence, handling post-attack actions as needed
         // In this method, unlike the other methods of this class, ATTACKER refers to the initiator of the BATTLE,
@@ -196,7 +196,7 @@ class BC2 {
 
     }
 
-    calculateAttackNoSpecial(attacker, defender) {
+    static calculateAttackNoSpecial(attacker, defender) {
         // From http://feheroes.gamepedia.com/Damage_Calculation#Complete_formula
         var atk = attacker.combatStats.atk,
             effective = this.effectiveBonus(attacker, defender),
@@ -210,7 +210,7 @@ class BC2 {
         return Math.max(0, Math.trunc((afterEff + Math.trunc(afterEff * advantage) - moddedMit) * classMod));
     }
 
-    calculateAttack(attacker, defender, attackerSpecCD, defenderSpecCD) {
+    static calculateAttack(attacker, defender, attackerSpecCD, defenderSpecCD) {
         var atk = attacker.combatStats.atk,
             effective = this.effectiveBonus(attacker, defender),
             advantage = this.advantageBonus(attacker, defender),
@@ -239,7 +239,7 @@ class BC2 {
 
     // HELPER FUNCTIONS
 
-    calculateCombatStats(unit) {
+    static calculateCombatStats(unit) {
         // This object will hold stats to use for this particular combat, and should be calculated first
         unit.combatStats = {
             atk: Math.max(0, unit.stats.atk + unit.stats.honeAtk + unit.stats.spurAtk - unit.stats.threatenAtk),
@@ -254,7 +254,7 @@ class BC2 {
         }
     }
 
-    mitigation(attacker, defender) {
+    static mitigation(attacker, defender) {
         // Gets the defender's relevant mitigation amount, taking into account the attacker's damage type
         if (attacker.weaponData.magical) {
             return defender.combatStats.res;
@@ -263,11 +263,11 @@ class BC2 {
         }
     }
 
-    outOfCombatAtk(attacker) {
+    static outOfCombatAtk(attacker) {
         return attacker.stats.atk + attacker.stats.honeAtk - attacker.stats.threatenAtk;
     }
 
-    outOfCombatMit(attacker, defender) {
+    static outOfCombatMit(attacker, defender) {
         // Returns the value of the defender's out of combat mitigation against the attacker's damage type
         if (attacker.weaponData.magical) {
             return defender.stats.res + defender.stats.honeRes - defender.stats.threatenRes;
@@ -276,7 +276,7 @@ class BC2 {
         }
     }
 
-    applyInitiateBonus(attacker) {
+    static applyInitiateBonus(attacker) {
         if (attacker.weaponData.hasOwnProperty("initiate_mod")) {
             this.applySpurBonuses(attacker, attacker.weaponData.initiate_mod);
         }
@@ -285,19 +285,19 @@ class BC2 {
         }
     }
 
-    applyDefendBonus(defender) {
+    static applyDefendBonus(defender) {
         if (defender.weaponData.hasOwnProperty("defend_mod")) {
             this.applySpurBonuses(defender, defender.weaponData.defend_mod);
         }
     }
 
-    applySpurBonuses(unit, statMods) {
+    static applySpurBonuses(unit, statMods) {
        for (var stat in statMods) {
             unit.stats[_.camelCase('spur-' + stat)] += statMods[stat];
         }
     }
 
-    effectiveBonus(attacker, defender) {
+    static effectiveBonus(attacker, defender) {
         var mult = 1;
         // super effectiveness against movement types
         if (attacker.weaponData.hasOwnProperty("move_effective") && attacker.weaponData.move_effective === defender.movementType) {
@@ -314,7 +314,7 @@ class BC2 {
         return mult;
     }
 
-    advantageBonus(attacker, defender) {
+    static advantageBonus(attacker, defender) {
         var weaponColorAdv = this.weaponColorAdvantage(attacker.color, defender.color, attacker.weaponData, defender.weaponData);
         var triAdv = this.triAdvantage(attacker.color, defender.color);
         var atkMod = 0;
@@ -357,7 +357,7 @@ class BC2 {
 
     // determines if the attacker has triangle advantage
     // returns 1 if advantage, -1 if disadvantage, 0 if neither
-    triAdvantage(attackColor, defendColor) {
+    static triAdvantage(attackColor, defendColor) {
         if (attackColor === defendColor || attackColor === "Colorless" || defendColor === "Colorless") {
             return 0;
         } else if ((attackColor === "Red" && defendColor === "Green") ||
@@ -371,7 +371,7 @@ class BC2 {
     // determines if the attacker has a weapon advantage/disadvantage against the other foe's color
     // returns 1 if advantage, -1 if disadvantage, 0 if neither
     // Primarily used for effective vs. colorless weapons
-    weaponColorAdvantage(attackColor, defendColor, attackWeapon, defendWeapon) {
+    static weaponColorAdvantage(attackColor, defendColor, attackWeapon, defendWeapon) {
         if (attackWeapon.hasOwnProperty("color_effective") && attackWeapon.color_effective === defendColor) {
             return 1;
         } else if (defendWeapon.hasOwnProperty("color_effective") && defendWeapon.color_effective === attackColor) {
@@ -380,7 +380,7 @@ class BC2 {
         return 0;
     }
 
-    mitigationModifier(attacker, defender, attackerSpecCD) {
+    static mitigationModifier(attacker, defender, attackerSpecCD) {
         var mitMod = 0;
         // Mitigation-reducing specials
         if (attacker.specialData.hasOwnProperty("enemy_def_res_mod") && attackerSpecCD <= 0) {
@@ -390,7 +390,7 @@ class BC2 {
         return mitMod;
     }
 
-    terrainMitigation(attacker, defender) {
+    static terrainMitigation(attacker, defender) {
         var mitMod = 0;
         // THIS IS THE WORST THING EVER TODO TODO FIX THIS
         var defenderTile = game.grid[defender.y][defender.x];
@@ -400,7 +400,7 @@ class BC2 {
         return mitMod;
     }
 
-    specialDmgBoost(attacker, attackerSpecCD) {
+    static specialDmgBoost(attacker, attackerSpecCD) {
         if (attacker.specialData.hasOwnProperty("dmg_buff_by_stat") && attackerSpecCD <= 0) {
             this.atkSpec = true;
             return attacker.specialData.dmg_buff_by_stat.buff * attacker.combatStats[attacker.specialData.dmg_buff_by_stat.stat];
@@ -412,7 +412,7 @@ class BC2 {
         }
     }
 
-    damageBonus(attacker, defender) {
+    static damageBonus(attacker, defender) {
         var bonusDmg = 0;
         if (attacker.weaponData.hasOwnProperty("spec_damage_bonus") && this.atkSpec) {
             bonusDmg += attacker.weaponData.spec_damage_bonus;
@@ -420,7 +420,7 @@ class BC2 {
         return bonusDmg;
     }
 
-    offensiveMultipler(attacker, defender, attackerSpecCD) {
+    static offensiveMultipler(attacker, defender, attackerSpecCD) {
         if (attacker.specialData.hasOwnProperty("dmg_mod") && attackerSpecCD <= 0) {
             this.atkSpec = true;
             return attacker.specialData.dmg_mod;
@@ -429,7 +429,7 @@ class BC2 {
         }
     }
 
-    defensiveMultipler(attacker, defender, defenderSpecCD) {
+    static defensiveMultipler(attacker, defender, defenderSpecCD) {
         if (defender.specialData.hasOwnProperty("reduce_dmg") && defenderSpecCD <= 0 &&
                 defender.specialData.reduce_dmg.range === attacker.weaponData.range) {
             // Mark that the defender has used its special
@@ -439,7 +439,7 @@ class BC2 {
         return 0;
     }
 
-    getSpecialCooldown(specialData, weaponData, assistData) {
+    static getSpecialCooldown(specialData, weaponData, assistData) {
         var cool = 0;
         if (specialData.hasOwnProperty("cooldown")) {
             cool = specialData.cooldown;
@@ -453,5 +453,3 @@ class BC2 {
         return Math.max(cool, 0);
     }
 }
-
-export let BattleCalc = new BC2();

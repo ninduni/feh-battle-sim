@@ -33,11 +33,42 @@ export default class Grid {
             debugGridGroup: add.group()
         };
 
+        this.terrainMap = this.parseTerrainMap(terrainMap);
+        console.log(this.terrainMap);
+
         for (var x = 0; x < this.maxGridX; x++) {
             for (var y = 0; y < this.maxGridY; y++) {
-                this.map[y][x] = new Tile(game, x, y, terrainMap[y][x], this.overlays);
+                this.map[y][x] = new Tile(game, x, y, this.terrainMap[y][x], this.overlays);
             }
         }
+
+        this.typeLookup = {
+            0: 'wall', // Impassible wall
+            1: 'plains',
+            2: 'forest',
+            3: 'mountain',
+            4: 'water',
+            5: 'fort',
+            // Instantiates a wall, afterwards broken behaves as plains
+            8: 'breakable1', // 1 HP
+            9: 'breakable2'  // 2 HP
+        };
+        this.reverseLookup = {
+            'wall': 0, // Impassible wall
+            'plains': 1,
+            'forest': 2,
+            'mountain': 3,
+            'water': 4,
+            'fort': 5,
+            // Instantiates a wall, afterwards broken behaves as plains
+            'breakable1': 8, // 1 HP
+            'breakable2': 9  // 2 HP
+        };
+    }
+
+    parseTerrainMap(terrainMap) {
+        // Turns an easy-to-write list of digit strings into a 2D array
+        return terrainMap.map((row) => row.split('').map((x) => parseInt(x)));
     }
 
     hideAll() {
@@ -69,6 +100,9 @@ export default class Grid {
         this.applyToGrid((tile) => tile.hideDebugText());
     }
 
+    borderGridToggle() {
+        this.applyToGrid((tile) => tile.border.visible = !tile.border.visible);
+    }
 
     applyToGrid(func) {
         // Applies a func that takes a tile as an argument to each tile in the grid

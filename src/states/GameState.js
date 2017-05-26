@@ -1,12 +1,14 @@
 import Unit from 'objects/Unit';
+import Wall from 'objects/Wall';
 import Grid from 'objects/Grid';
 import { createArray } from 'helpers/utils';
 import { assistInfo } from 'skills/assist';
 import { weaponInfo } from 'skills/weapon';
 import { skillInfo } from 'skills/skills';
+import { mapInfo } from 'helpers/maps';
 
 window.weaponInfo = weaponInfo;
-
+window.Wall = Wall;
 class GameState extends Phaser.State {
 
     create() {
@@ -30,6 +32,7 @@ class GameState extends Phaser.State {
             [1,1,1,0,0,0],
             [1,1,1,2,0,2]
         ];
+        this.game.terrainGrid = mapInfo.start;
 
         // Global grid object stores data about many things related to each square
         this.game.gridObj = new Grid(game, this.add, this.game.terrainGrid, this.game.maxGridX, this.game.maxGridY);
@@ -89,6 +92,12 @@ class GameState extends Phaser.State {
         this.game.units[caeda.id] = caeda;
         caeda.stats = _.extend(caeda.stats, { hp: 36, totalhp: 36, atk: 37, spd: 37, def: 24, res: 34 });
 
+        let wall = new Wall(2, 3, 2);
+        game.world.addChild(wall);
+        game.wall = wall;
+        this.game.grid[2][3].unit = 100;
+        this.game.units[100] = wall;
+
 
         // End-turn UI setup
         this.add.sprite(0, 720, 'bottom_bar');
@@ -99,7 +108,6 @@ class GameState extends Phaser.State {
         this.game.playerPhaseBanner = this.add.sprite(0, 0, 'player_phase');
         this.game.enemyPhaseBanner.alpha = 0;
         this.game.playerPhaseBanner.alpha = 0;
-
 
         var style = { font: "25px Arial", fill: "#ffffff", align: "left",
                       stroke: "#000000", strokeThickness: 2 };
@@ -122,7 +130,7 @@ class GameState extends Phaser.State {
         let banner = (this.game.isFriendlyTurn) ? this.game.playerPhaseBanner : this.game.enemyPhaseBanner;
         banner.bringToTop();
         // Show phase change banner
-        this.game.add.tween(banner).to( { alpha: 1 }, 750, Phaser.Easing.Exponential.Out, true, 0, 0, true);
+        this.game.add.tween(banner).to( { alpha: 1 }, 200, Phaser.Easing.Exponential.Out, true, 0, 0, true);
 
         // Reset all units on the given team
         _.values(this.game.units).forEach((unit) => {

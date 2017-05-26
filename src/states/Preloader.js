@@ -23,6 +23,10 @@ class Preloader extends Phaser.State {
 
 		this.game.load.atlasXML('types', 'images/types.png', 'images/types.xml');
 		this.game.load.atlas('selectors', 'images/selectors.png', 'images/selectors.js');
+
+		this.game.load.atlas('wall', 'images/wall.png', 'images/wall.js');
+
+		this.game.load.image('border', 'images/border.png');
 	}
 
 	create() {

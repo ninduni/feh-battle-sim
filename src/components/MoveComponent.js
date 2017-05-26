@@ -47,7 +47,7 @@ export default class MoveComponent extends Phaser.Sprite {
     setMovementType(type) {
         this.movementType = type;
 
-        var tileCosts = {1: 1, 4: 1};
+        var tileCosts = {1: 1, 5: 1, 9: 1};
         switch(this.movementType) {
 
             case 'Infantry':
@@ -63,10 +63,12 @@ export default class MoveComponent extends Phaser.Sprite {
                 break;
             case 'Flying':
                 tileCosts[3] = 1;
+                tileCosts[4] = 1;
                 this.movement = 2;
                 break;
         }
-        game.pathfinder.setAcceptableTiles(_.map(_.keys(tileCosts), (k) => parseInt(k)));
+        let acceptableTiles = _.map(_.keys(tileCosts), (k) => parseInt(k));
+        game.pathfinder.setAcceptableTiles(acceptableTiles);
         _.forIn(tileCosts, (value, key) => {
             game.pathfinder.setTileCost(key, value);
         });
@@ -322,7 +324,7 @@ export default class MoveComponent extends Phaser.Sprite {
         // Current position is always valid
         tmpGrid[toGrid(this.y)][toGrid(this.x)] = 1;
         game.pathfinder.setGrid(tmpGrid);
-        this.setMovementType();
+        this.setMovementType(this.movementType);
     }
 
     getValidMoves() {
