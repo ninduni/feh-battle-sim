@@ -1,11 +1,11 @@
 import { game } from 'index';
 
 export default class SpriteUI extends Phaser.Group {
-    constructor(unit, isFriendly, type) {
+    constructor(unit, isPlayer, type) {
         super(game);
 
         this.unit = unit;
-        this.isFriendly = isFriendly;
+        this.isPlayer = isPlayer;
 
         // Initialize so we redraw once
         this.lasthp = 0;
@@ -28,7 +28,7 @@ export default class SpriteUI extends Phaser.Group {
         // Health text
         var style = { font: "12px Arial", fill: "#ffffff", align: "left",
                       stroke: "#000000", strokeThickness: 2 };
-        var font = (isFriendly) ? 'bluefont' : 'redfont';
+        var font = (isPlayer) ? 'bluefont' : 'redfont';
         this.healthbarText = game.add.bitmapText(-35, 25, font, this.unit.stats.hp, 30);
         this.healthbarText.anchor.setTo(0.5);
         this.addChild(this.healthbarText);
@@ -72,7 +72,7 @@ export default class SpriteUI extends Phaser.Group {
         this.healthbar.clear();
         var x = (curHP / totalHP) * 100;
         // var colour = utils.rgbToHex((x > 50 ? 1-2*(x-50)/100.0 : 1.0) * 255, (x > 50 ? 1.0 : 2*x/100.0) * 255, 0);
-        var colour = (this.isFriendly) ? 0x64d2ea : 0xcf5568;
+        var colour = (this.isPlayer) ? 0x64d2ea : 0xcf5568;
         this.healthbar.beginFill(colour);
         this.healthbar.lineStyle(5, colour, 1);
         this.healthbar.moveTo(0,-5);

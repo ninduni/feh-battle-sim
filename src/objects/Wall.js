@@ -61,7 +61,7 @@ export default class Wall extends Phaser.Sprite {
         return true;
     }
 
-    isFriendly() {
+    isPlayer() {
         return null;
     }
 }

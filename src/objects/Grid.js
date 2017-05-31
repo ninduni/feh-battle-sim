@@ -9,6 +9,7 @@
 **/
 import Tile from 'objects/Tile';
 import { createArray } from 'helpers/utils';
+import Wall from 'objects/Wall';
 
 export default class Grid {
     constructor(game, add, terrainMap, maxGridX, maxGridY) {
@@ -34,11 +35,17 @@ export default class Grid {
         };
 
         this.terrainMap = this.parseTerrainMap(terrainMap);
-        console.log(this.terrainMap);
+
+        // Starting wall ID, increment as we add walls
+        this.wallID = 100;
 
         for (var x = 0; x < this.maxGridX; x++) {
             for (var y = 0; y < this.maxGridY; y++) {
                 this.map[y][x] = new Tile(game, x, y, this.terrainMap[y][x], this.overlays);
+                // Create walls if terrain map calls for them
+                if (this.isWall(this.terrainMap[y][x])) {
+                    this.createWall(x, y, this.terrainMap[y][x]);
+                }
             }
         }
 
@@ -64,6 +71,20 @@ export default class Grid {
             'breakable1': 8, // 1 HP
             'breakable2': 9  // 2 HP
         };
+    }
+
+    createWall(x, y, type) {
+        let wallHP = (type === 8) ? 1 : 2;
+        let wall = new Wall(wallHP, x, y);
+        game.world.addChild(wall);
+        game.wall = wall;
+        this.map[y][x].unit = this.wallID;
+        game.units[this.wallID] = wall;
+        this.wallID++;
+    }
+
+    isWall(terrain) {
+        return [8, 9].includes(terrain);
     }
 
     parseTerrainMap(terrainMap) {

@@ -4,10 +4,10 @@ import BattleCalc from 'helpers/BC2';
 import * as NearbyUnitHelper from 'helpers/NearbyUnitHelper';
 import * as AfterCombatHelper from 'helpers/AfterCombatHelper';
 import { runAssist } from 'helpers/AssistHelper';
-import { typeInfo } from 'skills/types';
-import { assistInfo } from 'skills/assist';
-import { weaponInfo } from 'skills/weapon';
-import { specInfo } from 'skills/special';
+import { typeInfo } from 'data/types';
+import { assistInfo } from 'data/assist';
+import { weaponInfo } from 'data/weapon';
+import { specInfo } from 'data/special';
 import SpriteUI from 'objects/SpriteUI';
 import Wall from 'objects/Wall';
 import MoveComponent from 'components/MoveComponent';
@@ -43,7 +43,7 @@ export default class Unit {
         game.world.addChild(this.sprite);
 
         // Creates the healthbar object, which will individually add all components as children of this unit
-        this.spriteUI = new SpriteUI(this, this.isFriendly());
+        this.spriteUI = new SpriteUI(this, this.isPlayer());
         this.sprite.addChild(this.spriteUI);
 
         // Set up type and movement type
@@ -70,7 +70,7 @@ export default class Unit {
         this.turnEnded = false;
 
         // Flip unit horizontally if on enemy team
-        if (!this.isFriendly()) {
+        if (!this.isPlayer()) {
             this.sprite.flip();
             this.spriteUI.flip();
         }
@@ -93,7 +93,12 @@ export default class Unit {
     }
     set movementType(moveType) {
         this.movementTypeName = moveType;
-        this.sprite.setMovementType(moveType);
+        this.movementRange = {
+            'Infantry': 2,
+            'Cavalry': 3,
+            'Armor': 1,
+            'Flying': 2
+        }[moveType];
     }
 
     get weapon() {
@@ -366,7 +371,7 @@ export default class Unit {
         }
     }
 
-    isFriendly() {
+    isPlayer() {
         // Returns whether THIS unit is on the enemy or "red" team
         return this.id <= 4;
     }

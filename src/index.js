@@ -1,9 +1,9 @@
 import GameState from 'states/GameState';
 import Preloader from 'states/Preloader';
-import { assistInfo } from 'skills/assist';
-import { weaponInfo } from 'skills/weapon';
-import { skillInfo } from 'skills/skills';
-import { specInfo } from 'skills/special';
+import { assistInfo } from 'data/assist';
+import { weaponInfo } from 'data/weapon';
+import { skillInfo } from 'data/skills';
+import { specInfo } from 'data/special';
 
 var _ = require('lodash');
 window._ = _;

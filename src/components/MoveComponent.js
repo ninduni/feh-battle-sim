@@ -44,39 +44,14 @@ export default class MoveComponent extends Phaser.Sprite {
         this.scale.x = -1;
     }
 
-    setMovementType(type) {
+    setMoveRange(type) {
         this.movementType = type;
-
-        var tileCosts = {1: 1, 5: 1, 9: 1};
-        switch(this.movementType) {
-
-            case 'Infantry':
-                tileCosts[2] = 2;
-                this.movement = 2;
-                break;
-            case 'Cavalry':
-                this.movement = 3;
-                break;
-            case 'Armor':
-                tileCosts[2] = 1;
-                this.movement = 1;
-                break;
-            case 'Flying':
-                tileCosts[3] = 1;
-                tileCosts[4] = 1;
-                this.movement = 2;
-                break;
-        }
-        let acceptableTiles = _.map(_.keys(tileCosts), (k) => parseInt(k));
-        game.pathfinder.setAcceptableTiles(acceptableTiles);
-        _.forIn(tileCosts, (value, key) => {
-            game.pathfinder.setTileCost(key, value);
-        });
+        game.pathfinder.setMovementType(type);
     }
 
     onDragStart() {
         // Can't drag if not your turn
-        if (game.isFriendlyTurn !== this.unit.isFriendly()) {
+        if (game.isPlayerTurn !== this.unit.isPlayer()) {
             this.stopDrag();
             return;
         }
@@ -333,7 +308,8 @@ export default class MoveComponent extends Phaser.Sprite {
         var posX = toGrid(this.x),
             posY = toGrid(this.y),
             validMoves = [];
-        this.preparePathfinder();
+        // this.preparePathfinder();
+        game.pathfinder.prepare(this);
         for (var x = 0; x < game.maxGridX; x++) {
             for (var y = 0; y < game.maxGridY; y++) {
                 this.pathCost = null;
@@ -349,7 +325,7 @@ export default class MoveComponent extends Phaser.Sprite {
                 }
 
                 // If the path found is within our movement, add it
-                if (this.pathCost <= this.movement) {
+                if (this.pathCost <= this.unit.movementRange) {
                     validMoves.push({x: x, y: y});
                 }
             }
