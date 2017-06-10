@@ -15,15 +15,42 @@ class Game extends Phaser.Game {
         this.state.add('Preloader', Preloader, false);
         this.state.add('GameState', GameState, false);
         this.state.start('Preloader');
+
+        this.friendlyID = 1;
+        this.enemyID = 5;
+    }
+
+    addUnit(side) {
+        // Add a character select button
+        let html = $('<button type="button" class="char-select btn btn-secondary"></button>');
+        let idx;
+        let charAddBtn = $('.char-add[data-side=' + side + ']');
+        if (side === 'friendly') {
+            idx = this.friendlyID++;
+            if (this.friendlyID > 4) {
+                charAddBtn.hide();
+            }
+        } else {
+            idx = this.enemyID++;
+            if (this.enemyID > 8) {
+                charAddBtn.hide();
+            }
+        }
+        html.attr('data-idx', idx).text(idx);
+        charAddBtn.before(html);
+
+        // Add unit to game
+        var state = game.state.getCurrentState();
+        state.addUnit(idx);
     }
 
     displayBattleText(attacker, defender, battleResult) {
         $('#battle-preview').show();
-        $('#attacker-name').text(_.upperFirst(attacker.name));
+        $('#attacker-name').text(attacker.name);
         $('#attacker-hp-start').text(attacker.stats.hp);
         $('#attacker-hp-end').text(battleResult.attackerHP);
 
-        $('#defender-name').text(_.upperFirst(defender.name));
+        $('#defender-name').text(defender.name);
         $('#defender-hp-start').text(defender.stats.hp);
         $('#defender-hp-end').text(battleResult.defenderHP);
 
@@ -57,6 +84,9 @@ class Game extends Phaser.Game {
     }
 
     unitSelect(unitID) {
+        console.log('selected');
+        $('.unit-form').removeClass('invisible');
+
         // Deselect old button
         var oldSelect = $('#selected-character').val();
         if (oldSelect !== '') {
@@ -70,7 +100,7 @@ class Game extends Phaser.Game {
         // Fetch stats from inside game
         var unit = this.getStats(unitID);
         var stats = unit.stats || {};
-        $('#unit-name').text(_.upperFirst(unit.name));
+        $('#unit-name').val(unit.name);
         $('#hp').val(stats.totalhp);
         $('#atk').val(stats.atk);
         $('#spd').val(stats.spd);
@@ -96,6 +126,7 @@ class Game extends Phaser.Game {
         }
 
         $('#type').val(unit.type);
+        $('#movement').val(unit.movementType);
 
         updateSkillLists();
         $('#weapon').val(unit.weapon || '');
@@ -118,8 +149,9 @@ class Game extends Phaser.Game {
         });
     }
 
-    setMap(mapunitID) {
-        this.map.frame = mapunitID;
+    setMap(newMap) {
+        var state = game.state.getCurrentState();
+        state.resetMap(newMap);
     }
 
     setStats({ unitID, hp, atk, spd, def, res }) {
@@ -133,8 +165,16 @@ class Game extends Phaser.Game {
         unit.updateHP();
     }
 
+    setName(unitID, name) {
+        this.units[unitID].name = name;
+    }
+
     setType(unitID, type) {
         this.units[unitID].type = type;
+    }
+
+    setMovement(unitID, movement) {
+        this.units[unitID].movementType = movement;
     }
 
     setWeapon(unitID, weapon) {
@@ -161,61 +201,47 @@ window.game = game;
 // window.skillInfo = skillInfo;
 
 $(document).ready(function() {
-    $('#battle-preview').hide();
 
-    $('#assist').empty();
-    $('#assist').append($("<option></option>").text('---').attr('value', ''));
-    _.keys(assistInfo).forEach((a) => {
-        $('#assist').append($("<option></option>").attr('value', a).text(a));
-    });
+$('#battle-preview').hide();
 
-    $('#special').empty();
-    $('#special').append($("<option></option>").text('---').attr('value', ''));
-    _.keys(specInfo).forEach((s) => {
-        $('#special').append($("<option></option>").attr('value', s).text(s));
-    });
-
-    $('#a-skill').empty();
-    $('#a-skill').append($("<option></option>").text('---').attr('value', ''));
-    _.keys(skillInfo.a).forEach((s) => {
-        $('#a-skill').append($("<option></option>").attr('value', s).text(s));
-    });
-    $('#b-skill').empty();
-    $('#b-skill').append($("<option></option>").text('---').attr('value', ''));
-    _.keys(skillInfo.b).forEach((s) => {
-        $('#b-skill').append($("<option></option>").attr('value', s).text(s));
-    });
-    $('#c-skill').empty();
-    $('#c-skill').append($("<option></option>").text('---').attr('value', ''));
-    _.keys(skillInfo.c).forEach((s) => {
-        $('#c-skill').append($("<option></option>").attr('value', s).text(s));
-    });
-
-    // $('#arena-map-select-rot-1').empty();
-
+///////////////
+// Load data //
+///////////////
+$('#assist').empty();
+$('#assist').append($("<option></option>").text('---').attr('value', ''));
+_.keys(assistInfo).forEach((a) => {
+    $('#assist').append($("<option></option>").attr('value', a).text(a));
 });
 
-$('#goto-turn').click(function() {
-    var state = game.state.getCurrentState();
-    state.loadTurnState($('#turn-history').val());
+$('#special').empty();
+$('#special').append($("<option></option>").text('---').attr('value', ''));
+_.keys(specInfo).forEach((s) => {
+    $('#special').append($("<option></option>").attr('value', s).text(s));
 });
 
-$('#place-marker').click(function() {
-    var state = game.state.getCurrentState();
-    state.saveTurnState('-- Marker --');
+$('#a-skill').empty();
+$('#a-skill').append($("<option></option>").text('---').attr('value', ''));
+_.keys(skillInfo.a).forEach((s) => {
+    $('#a-skill').append($("<option></option>").attr('value', s).text(s));
+});
+$('#b-skill').empty();
+$('#b-skill').append($("<option></option>").text('---').attr('value', ''));
+_.keys(skillInfo.b).forEach((s) => {
+    $('#b-skill').append($("<option></option>").attr('value', s).text(s));
+});
+$('#c-skill').empty();
+$('#c-skill').append($("<option></option>").text('---').attr('value', ''));
+_.keys(skillInfo.c).forEach((s) => {
+    $('#c-skill').append($("<option></option>").attr('value', s).text(s));
 });
 
-$('#turn-history').on('change', function() {
-    // Enable the GOTO button if something is selected
-    $('#goto-turn').prop('disabled', false);
-});
-
-$('#arena-map-select-rot-1').on('change', function() {
-    game.setMap(parseInt($(this).val()));
-});
-
-$('#arena-map-select-rot-2').on('change', function() {
-    game.setMap(parseInt($(this).val()));
+//////////////////
+// Map Controls //
+//////////////////
+$('.chg-map-btn').click(function() {
+    let mapVal = $($(this).attr('data-select')).val();
+    console.log(mapVal);
+    changeMap(mapVal);
 });
 
 $('#stats-form').on('focusout', function() {
@@ -229,12 +255,27 @@ $('#stats-form').on('focusout', function() {
     game.setStats({ char: char, hp: hp, atk: atk, spd: spd, def: def, res: res });
 });
 
+///////////////////
+// Unit Controls //
+///////////////////
+$('#unit-name').on('blur', function() {
+    let char = $('#selected-character').val();
+    game.setName(char, $(this).val());
+});
+
 $('#type-form').on('change', function() {
     var type = $('#type').val(),
         char = $('#selected-character').val();
 
     game.setType(char, type);
     updateSkillLists();
+});
+
+$('#movement-form').on('change', function() {
+    var movement = $('#movement').val(),
+        char = $('#selected-character').val();
+
+    game.setMovement(char, movement);
 });
 
 $('#weapon').on('change', function() {
@@ -266,12 +307,40 @@ $('.passive-skill-form').on('change', function() {
     game.setSkill(char, skill, slot);
 });
 
-$('.char-select').click(function() {
+$('.char-add').click(function() {
+    let side = $(this).attr('data-side');
+    game.addUnit(side);
+});
+
+$('.char-select-group').on('click', '.char-select', function() {
     game.unitSelect($(this).attr('data-idx'));
 });
 
-// Updates the skill list based on type restrictions
+///////////////////
+// Turn Controls //
+///////////////////
+$('#goto-turn').click(function() {
+    var state = game.state.getCurrentState();
+    state.loadTurnState($('#turn-history').val());
+});
+
+$('#place-marker').click(function() {
+    var state = game.state.getCurrentState();
+    state.saveTurnState('-- Marker --');
+});
+
+$('#turn-history').on('change', function() {
+    // Enable the GOTO button if something is selected
+    $('#goto-turn').prop('disabled', false);
+});
+
+}); // End on document ready
+
+/////////////
+// Helpers //
+/////////////
 function updateSkillLists() {
+    // Updates the skill list based on type restrictions
     var newWeapons = _.keys(_.pickBy(weaponInfo, (w) => w.type === $('#type').val()));
     $('#weapon').empty();
     $('#weapon').append($("<option></option>"));
@@ -279,4 +348,10 @@ function updateSkillLists() {
         $('#weapon').append($("<option></option>")
             .attr('value', w).text(w));
     });
+}
+
+function changeMap(newMap) {
+    if (confirm("Are you sure you want to reset the map? This will clear all units.") === true) {
+        game.setMap(newMap);
+    }
 }

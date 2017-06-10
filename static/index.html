@@ -19,16 +19,16 @@
 
 			<div id="ui" class="col">
 				<!-- Input area -->
-				<div class="row">
+				<div>
 					<ul class="nav nav-tabs" role="tablist">
+						<li class="nav-item">
+							<a class="nav-link" data-toggle="tab" href="#map-panel" role="tab">Maps</a>
+						</li>
 						<li class="nav-item">
 							<a class="nav-link active" data-toggle="tab" href="#units" role="tab">Units</a>
 						</li>
 						<li class="nav-item">
 							<a class="nav-link" data-toggle="tab" href="#turns" role="tab">Turns</a>
-						</li>
-						<li class="nav-item">
-							<a class="nav-link" data-toggle="tab" href="#map-panel" role="tab">Maps</a>
 						</li>
 					</ul>
 					<div class="tab-content">
@@ -37,11 +37,8 @@
 								<div class="col-2 mr-2">
 									<label class="col-form-label">Friendly</label>
 								</div>
-								<div class="col btn-group">
-									<button type="button" data-idx=1 class="char-select btn btn-secondary">1</button>
-									<button type="button" data-idx=2 class="char-select btn btn-secondary">2</button>
-									<button type="button" data-idx=3 class="char-select btn btn-secondary">3</button>
-									<button type="button" data-idx=4 class="char-select btn btn-secondary">4</button>
+								<div class="col btn-group char-select-group friendly-select">
+									<button type="button" class="char-add btn btn-primary" data-side='friendly'>+</button>
 								</div>
 							</div>
 
@@ -49,11 +46,8 @@
 								<div class="col-2 mr-2">
 									<label class="col-form-label">Enemy</label>
 								</div>
-								<div class="col btn-group">
-									<button type="button" data-idx=5 class="char-select btn btn-secondary">1</button>
-									<button type="button" data-idx=6 class="char-select btn btn-secondary">2</button>
-									<button type="button" data-idx=7 class="char-select btn btn-secondary">3</button>
-									<button type="button" data-idx=8 class="char-select btn btn-secondary">4</button>
+								<div class="col btn-group char-select-group enemy-select">
+									<button type="button" class="char-add btn btn-primary" data-side='enemy'>+</button>
 								</div>
 							</div>
 
@@ -61,132 +55,147 @@
 
 							<hr>
 
-							<div class="row m-2 mt-4">
-								<form id="name-form" class="col-6 mb-4">
-									<span id="unit-name">No Unit Selected</span>
-								</form>
-
-								<form id="type-form" class="col-6 mb-4">
-									<select class="form-control form-control-sm" id="type">
-										<option value="sword">Red Sword</option>
-										<option value="axe">Green Axe</option>
-										<option value="lance">Blue Lance</option>
-										<option value="redTome">Red Tome</option>
-										<option value="greenTome">Green Tome</option>
-										<option value="blueTome">Blue Tome</option>
-										<option value="redDragon">Red Dragon</option>
-										<option value="greenDragon">Green Dragon</option>
-										<option value="blueDragon">Blue Dragon</option>
-										<option value="bow">Bow</option>
-										<option value="dagger">Dagger</option>
-										<option value="staff">Staff</option>
-									</select>
-								</form>
-
-								<form id="stats-form" class="col-4">
-									<div class="form-group row">
-										<label for="hp" class="col-sm-2 col-form-label form-control-sm">HP</label>
-										<div class="col-sm-7">
-											<input type="text" class="form-control form-control-sm" id="hp">
-										</div>
-										<div id="hone-hp" class="col-sm-3 bonus-attr"></div>
+							<div class="unit-form invisible">
+								<div class="row mb-4">
+									<div class="col">
+										<input id="unit-name" class="form-control" disabled placeholder="Name"></input>
 									</div>
+								</div>
 
-									<div class="form-group row">
-										<label for="atk" class="col-sm-2 col-form-label form-control-sm">Atk</label>
-										<div class="col-sm-7">
-											<input type="text" class="form-control form-control-sm" id="atk">
-										</div>
-										<div id="hone-atk" class="col-sm-3 bonus-attr"></div>
-									</div>
+								<div class="row mb-4">
+									<form id="type-form" class="col">
+										<select class="form-control form-control-sm" id="type">
+											<option value="sword">Red Sword</option>
+											<option value="axe">Green Axe</option>
+											<option value="lance">Blue Lance</option>
+											<option value="redTome">Red Tome</option>
+											<option value="greenTome">Green Tome</option>
+											<option value="blueTome">Blue Tome</option>
+											<option value="redDragon">Red Dragon</option>
+											<option value="greenDragon">Green Dragon</option>
+											<option value="blueDragon">Blue Dragon</option>
+											<option value="bow">Bow</option>
+											<option value="dagger">Dagger</option>
+											<option value="staff">Staff</option>
+										</select>
+									</form>
 
-									<div class="form-group row">
-										<label for="spd" class="col-sm-2 col-form-label form-control-sm">Spd</label>
-										<div class="col-sm-7">
-											<input type="text" class="form-control form-control-sm" id="spd">
-										</div>
-										<div id="hone-spd" class="col-sm-3 bonus-attr"></div>
-									</div>
+									<form id="movement-form" class="col">
+										<select class="form-control form-control-sm" id="movement">
+											<option value="Infantry">Infantry</option>
+											<option value="Cavalry">Cavalry</option>
+											<option value="Armor">Armor</option>
+											<option value="Flying">Flying</option>
+										</select>
+									</form>
+								</div>
 
-									<div class="form-group row">
-										<label for="def" class="col-sm-2 col-form-label form-control-sm">Def</label>
-										<div class="col-sm-7">
-											<input type="text" class="form-control form-control-sm" id="def">
+								<div class="row">
+									<form id="stats-form" class="col-4">
+										<div class="form-group row">
+											<label for="hp" class="col-sm-2 col-form-label form-control-sm">HP</label>
+											<div class="col-sm-7">
+												<input type="text" class="form-control form-control-sm" id="hp">
+											</div>
+											<div id="hone-hp" class="col-sm-3 bonus-attr"></div>
 										</div>
-										<div id="hone-def" class="col-sm-3 bonus-attr"></div>
-									</div>
 
-									<div class="form-group row">
-										<label for="res" class="col-sm-2 col-form-label form-control-sm">Res</label>
-										<div class="col-sm-7">
-											<input type="text" class="form-control form-control-sm" id="res">
+										<div class="form-group row">
+											<label for="atk" class="col-sm-2 col-form-label form-control-sm">Atk</label>
+											<div class="col-sm-7">
+												<input type="text" class="form-control form-control-sm" id="atk">
+											</div>
+											<div id="hone-atk" class="col-sm-3 bonus-attr"></div>
 										</div>
-										<div id="hone-res" class="col-sm-3 bonus-attr"></div>
-									</div>
-								</form>
 
-								<form id="skills-form" class="col-8">
-									<div class="form-group row">
-										<label for="weapon" class="col-sm-2 col-form-label form-control-sm">Weap</label>
-										<div class="col-sm-10">
-											<select class="form-control form-control-sm" id="weapon">
-												<option>Ruby Sword</option>
-												<option>Silver Sword</option>
-												<option>Sol Katti</option>
-											</select>
+										<div class="form-group row">
+											<label for="spd" class="col-sm-2 col-form-label form-control-sm">Spd</label>
+											<div class="col-sm-7">
+												<input type="text" class="form-control form-control-sm" id="spd">
+											</div>
+											<div id="hone-spd" class="col-sm-3 bonus-attr"></div>
 										</div>
-									</div>
 
-									<div class="form-group row">
-										<label for="assist" class="col-sm-2 col-form-label form-control-sm">Asst</label>
-										<div class="col-sm-10">
-											<select class="form-control form-control-sm" id="assist">
-												<option>None</option>
-												<option>Shove</option>
-											</select>
+										<div class="form-group row">
+											<label for="def" class="col-sm-2 col-form-label form-control-sm">Def</label>
+											<div class="col-sm-7">
+												<input type="text" class="form-control form-control-sm" id="def">
+											</div>
+											<div id="hone-def" class="col-sm-3 bonus-attr"></div>
 										</div>
-									</div>
 
-									<div class="form-group row">
-										<label for="special" class="col-sm-2 col-form-label form-control-sm">Spec</label>
-										<div class="col-sm-10">
-											<select class="form-control form-control-sm" id="special">
-												<option>Luna</option>
-												<option>Sol</option>
-											</select>
+										<div class="form-group row">
+											<label for="res" class="col-sm-2 col-form-label form-control-sm">Res</label>
+											<div class="col-sm-7">
+												<input type="text" class="form-control form-control-sm" id="res">
+											</div>
+											<div id="hone-res" class="col-sm-3 bonus-attr"></div>
 										</div>
-									</div>
+									</form>
 
-									<div class="form-group row">
-										<label for="a-skill" class="col-sm-2 col-form-label form-control-sm">A</label>
-										<div class="col-sm-10">
-											<select class="passive-skill-form form-control form-control-sm" id="a-skill" data-slot="A">
-												<option>Defiant Atk 3</option>
-												<option>Death Blow 2</option>
-											</select>
+									<form id="skills-form" class="col-8">
+										<div class="form-group row">
+											<label for="weapon" class="col-sm-2 col-form-label form-control-sm">Weap</label>
+											<div class="col-sm-10">
+												<select class="form-control form-control-sm" id="weapon">
+													<option>Ruby Sword</option>
+													<option>Silver Sword</option>
+													<option>Sol Katti</option>
+												</select>
+											</div>
 										</div>
-									</div>
 
-									<div class="form-group row">
-										<label for="b-skill" class="col-sm-2 col-form-label form-control-sm">B</label>
-										<div class="col-sm-10">
-											<select class="passive-skill-form form-control form-control-sm" id="b-skill" data-slot="B">
-												<option>Obstruct 2</option>
-												<option>Wings of Mercy 2</option>
-											</select>
+										<div class="form-group row">
+											<label for="assist" class="col-sm-2 col-form-label form-control-sm">Asst</label>
+											<div class="col-sm-10">
+												<select class="form-control form-control-sm" id="assist">
+													<option>None</option>
+													<option>Shove</option>
+												</select>
+											</div>
 										</div>
-									</div>
 
-									<div class="form-group row">
-										<label for="c-skill" class="col-sm-2 col-form-label form-control-sm">C</label>
-										<div class="col-sm-10">
-											<select class="passive-skill-form form-control form-control-sm" id="c-skill" data-slot="C">
-												<option>Fortify Def 3</option>
-												<option>Threaten Res 3</option>
-											</select>
+										<div class="form-group row">
+											<label for="special" class="col-sm-2 col-form-label form-control-sm">Spec</label>
+											<div class="col-sm-10">
+												<select class="form-control form-control-sm" id="special">
+													<option>Luna</option>
+													<option>Sol</option>
+												</select>
+											</div>
 										</div>
-									</div>
-								</form>
+
+										<div class="form-group row">
+											<label for="a-skill" class="col-sm-2 col-form-label form-control-sm">A</label>
+											<div class="col-sm-10">
+												<select class="passive-skill-form form-control form-control-sm" id="a-skill" data-slot="A">
+													<option>Defiant Atk 3</option>
+													<option>Death Blow 2</option>
+												</select>
+											</div>
+										</div>
+
+										<div class="form-group row">
+											<label for="b-skill" class="col-sm-2 col-form-label form-control-sm">B</label>
+											<div class="col-sm-10">
+												<select class="passive-skill-form form-control form-control-sm" id="b-skill" data-slot="B">
+													<option>Obstruct 2</option>
+													<option>Wings of Mercy 2</option>
+												</select>
+											</div>
+										</div>
+
+										<div class="form-group row">
+											<label for="c-skill" class="col-sm-2 col-form-label form-control-sm">C</label>
+											<div class="col-sm-10">
+												<select class="passive-skill-form form-control form-control-sm" id="c-skill" data-slot="C">
+													<option>Fortify Def 3</option>
+													<option>Threaten Res 3</option>
+												</select>
+											</div>
+										</div>
+									</form>
+								</div>
 							</div>
 						</div>
 
@@ -208,27 +217,42 @@
 						</div>
 
 						<div class="tab-pane" id="map-panel" role="tabpanel">
-							<div class="row m-2 mt-4">
-								<div class="col mr-2">
+							<div class="row m-2">
+								<div class="col">
+									<h4>Arena Rotation 1</h4>
+								</div>
+							</div>
+							<div class="row m-2 no-gutters">
+								<div class="col-10">
 									<select id="arena-map-select-rot-1" class="form-control" id="type">
-										<option value=33>Forest</option>
-										<option value=72>Bridges</option>
-										<option value=34>Ruins</option>
-										<option value=73>Lava</option>
-										<option value=35>Ridge</option>
+										<option value='forest'>Forest</option>
+										<option value='bridges'>Bridges</option>
+										<option value='ruins'>Ruins</option>
+										<option value='lava'>Lava</option>
+										<option value='ridge'>Ridge</option>
 									</select>
-									<select id="arena-map-select-rot-2" class="form-control" id="type">
-										<option value=36>Pillars</option>
-										<option value=37>Valley</option>
-										<option value=38>Desert</option>
-										<option value=39>Walls</option>
-										<option value=74>Wells</option>
-									</select>
+								</div>
+								<div class="col">
+									<button class="btn btn-secondary chg-map-btn" data-select='#arena-map-select-rot-1'>Go</button>
 								</div>
 							</div>
 							<div class="row m-2">
 								<div class="col">
-									<button id="goto-turn" disabled class="btn btn-secondary">Change Map</button>
+									<h4>Arena Rotation 2</h4>
+								</div>
+							</div>
+							<div class="row m-2 no-gutters">
+								<div class="col-10">
+									<select id="arena-map-select-rot-2" class="form-control" id="type">
+										<option value='pillars'>Pillars</option>
+										<option value='valley'>Valley</option>
+										<option value='desert'>Desert</option>
+										<option value='walls'>Walls</option>
+										<option value='wells'>Wells</option>
+									</select>
+								</div>
+								<div class="col">
+									<button class="btn btn-secondary chg-map-btn" data-select='#arena-map-select-rot-2'>Go</button>
 								</div>
 							</div>
 						</div>

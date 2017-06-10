@@ -18,7 +18,7 @@ export default class Unit {
     // This class' x/y are the x/y of the character on the grid, not absolute
     //   pixels in the canvas
 
-    constructor({gridX, gridY, movementType, weapon, asset, type, id}) {
+    constructor({gridX, gridY, movementType, name, asset, type, id}) {
         this.name = asset; // Not unique!
         this.id = id;
         this.x = this.lastX = gridX;
@@ -59,7 +59,7 @@ export default class Unit {
         this.passiveCData = {};
 
         // Weapon
-        this.weapon = weapon;
+        this.weapon = '';
         // Assist
         this.assist = '';
         // Special

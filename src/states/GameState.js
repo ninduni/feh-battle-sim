@@ -4,6 +4,7 @@ import Wall from 'objects/Wall';
 import Grid from 'objects/Grid';
 import { createArray } from 'helpers/utils';
 import { mapInfo } from 'data/maps';
+import * as utils from 'helpers/utils';
 import Pathfinder from 'helpers/Pathfinder';
 
 class GameState extends Phaser.State {
@@ -34,7 +35,10 @@ class GameState extends Phaser.State {
         this.initEndTurnUI();
 
         // DEMO STUFF
-        this.populateDemoUnits();
+        // this.populateDemoUnits();
+
+        // Flag whether we're currently placing a unit
+        this.placingUnit = null;
 
         // Fire off initial game state
         this.saveTurnState('-- Beginning of match --');
@@ -55,29 +59,75 @@ class GameState extends Phaser.State {
         game.turnText = game.add.text(200, 735, 'Player Phase', style);
     }
 
+    update() {
+
+    }
+
+    addUnit(idx, manual=true, pos=null) {
+        // If manual = true, we allow manual placement of the new unit
+        if (manual) {
+            console.log('placing unit');
+            this.placingUnit = idx;
+            game.input.onTap.add(this.manualPlace, this);
+        } else {
+            this.placeUnit(idx, pos);
+        }
+    }
+
+    manualPlace(pointer) {
+        // Validate click location
+        let pointerGridX = utils.toGrid(pointer.position.x);
+        let pointerGridY = utils.toGrid(pointer.position.y);
+        if ((pointerGridX > 0) && (pointerGridX < game.maxGridX) &&
+                (pointerGridX > 0) && (pointerGridY < game.maxGridY)) {
+            game.input.onTap.remove(this.manualPlace, this);
+            this.placeUnit(this.placingUnit, {x: pointerGridX, y: pointerGridY});
+            this.placingUnit = null;
+        } else {
+            console.log('Invalid unit placement');
+        }
+    }
+
+    placeUnit(idx, pos) {
+        let unit = new Unit({gridX: pos.x, gridY: pos.y,
+                 movementType: 'Infantry',
+                 name: 'Unit ' + idx,
+                 asset: 'anna',
+                 type: 'sword',
+                 id: idx});
+        game.grid[pos.y][pos.x].unit = unit.id;
+        game.units[unit.id] = unit;
+        unit.stats = _.extend(unit.stats, { hp: 10, totalhp: 10, atk: 0, spd: 0, def: 0, res: 0 });
+    }
+
     resetMap(mapName) {
+        // Remove all units
+        _.values(game.units).forEach((unit) => {
+            if (unit instanceof Wall) {
+                unit.destroy();
+            } else {
+                unit.sprite.destroy();
+            }
+        });
+        game.units = {};
+        // Reset history
+        game.history = [];
         // Fetch the terrain grid and generate a new grid object
         game.terrainGrid = mapInfo[mapName].terrain;
         game.map.frame = mapInfo[mapName].frame;
         game.gridObj = new Grid(game, this.add, game.terrainGrid, game.maxGridX, game.maxGridY);
         game.grid = game.gridObj.map;
-        // Remove all units
-        _.values(game.units).forEach((unit) => {
-            unit.sprite.destroy();
-        });
-        game.units = {};
-        // Reset history
-        game.history = [];
     }
 
     populateDemoUnits() {
         // Add units
         let anna = new Unit({gridX: 1, gridY: 6,
                              movementType: 'Infantry',
-                             weapon: 'Silver Axe',
+                             name: 'Anna',
                              asset: 'anna',
                              type: 'axe',
                              id: 1});
+        anna.weapon = 'Silver Axe';
         anna.assist = 'Swap';
         anna.special = 'Rising Light';
         game.anna = anna;
@@ -87,10 +137,11 @@ class GameState extends Phaser.State {
 
         let zach = new Unit({gridX: 2, gridY: 6,
                              movementType: 'Cavalry',
-                             weapon: 'Thoron',
+                             name: 'Zach',
                              asset: 'zach',
                              type: 'blueTome',
                              id: 2});
+        zach.weapon = 'Thoron';
         game.zach = zach;
         game.grid[6][2].unit = zach.id;
         game.units[zach.id] = zach;
@@ -98,10 +149,11 @@ class GameState extends Phaser.State {
 
         let draug = new Unit({gridX: 3, gridY: 4,
                              movementType: 'Armor',
-                             weapon: 'Brave Sword',
+                             name: 'Draug',
                              asset: 'draug',
                              type: 'sword',
                              id: 5});
+        draug.weapon = 'Brave Sword';
         game.draug = draug;
         game.grid[4][3].unit = draug.id;
         game.units[draug.id] = draug;
@@ -109,18 +161,15 @@ class GameState extends Phaser.State {
 
         let caeda = new Unit({gridX: 2, gridY: 5,
                              movementType: 'Flying',
-                             weapon: 'Armorslayer+',
+                             name: 'Caeda',
                              asset: 'caeda',
                              type: 'sword',
                              id: 6});
+        caeda.weapon = 'Armorslayer+';
         game.caeda = caeda;
         game.grid[5][2].unit = caeda.id;
         game.units[caeda.id] = caeda;
         caeda.stats = _.extend(caeda.stats, { hp: 36, totalhp: 36, atk: 37, spd: 37, def: 24, res: 34 });
-    }
-
-    update() {
-
     }
 
     endTurnBtnClickHandler() {
